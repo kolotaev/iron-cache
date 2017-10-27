@@ -11,4 +11,5 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [clj-http "3.7.0"]])
+                 [clj-http "3.7.0"]
+                 [cch1/http.async.client "1.2.0"]])

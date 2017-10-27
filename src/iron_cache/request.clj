@@ -1,3 +1,3 @@
-(ns iron-cache.requests)
+(ns iron-cache.request)
 
 (:require [clj-http.client :as http])
