@@ -1,6 +1,4 @@
 (ns iron-cache.core)
 
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
+(def ^:const AWS_US_EAST_HOST "cache-aws-us-east-1.iron.io")
+

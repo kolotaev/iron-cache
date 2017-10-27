@@ -1,6 +1,14 @@
 (defproject iron-cache "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+
+  :description "Clojure client for IronCache by www.iron.io"
+
+  :url "https://github.com/kolotaev/iron-cache"
+
+  :scm {:name "github"
+        :url "https://github.com/kolotaev/iron-cache/tree/master"}
+
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.8.0"]])
+
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [clj-http "3.7.0"]])
