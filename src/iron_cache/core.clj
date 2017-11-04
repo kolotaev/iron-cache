@@ -10,8 +10,18 @@
               :user_agent => "iron_cache_clj"
               :cache_name => "default"})
 
+
+(defprotocol Cache
+  "Iron cache instance"
+  (defn list [this & fns] "Get list off all cache items")
+  (defn info [this & fns] "Get information about a cache")
+  (defn delete [this & fns] "Delete a cache")
+  (defn clear [this & fns] "Clear a cache"))
+
+
 (defn new-client
-  [options])
+  [options]
+  )
 
 (defn new-async-client
   [options])
