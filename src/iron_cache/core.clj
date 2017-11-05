@@ -22,9 +22,9 @@
 (defprotocol CacheKey
   "Iron cache instance keys manipulation"
   (defn put [this key val & fns] "Add key/value pair to a cache")
-  (defn get [this & fns] "Delete a cache")
-  (defn inc [this & fns] "Increment value in a cache by a specified key")
-  (defn del [this & fns] "Delete a value from a cache by a specified key"))
+  (defn get [this & fns] "Get a value stored in a keyfrom a cache")
+  (defn incr [this key & fns] "Increment value in a cache by a specified key")
+  (defn del [this key & fns] "Delete a value from a cache by a specified key"))
 
 
 (defn new-client
