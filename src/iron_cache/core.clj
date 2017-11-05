@@ -1,15 +1,15 @@
 (ns iron-cache.core
-  (:require [iron-cache.sync])
+  (:refer-clojure :exclude [list get]))
 
 (def ^:const ROOT_URL "cache-aws-us-east-1.iron.io/1")
 
 (def ^:const default-options
-            { :scheme => "https",
-              :host => ROOT_URL,
-              :port => 443,
-              :api_version => 1,
-              :user_agent => "iron_cache_clj"
-              :cache_name => "default"})
+            { :scheme "https"
+              :host ROOT_URL
+              :port 443
+              :api_version 1
+              :user_agent "iron_cache_clj"
+              :cache_name "default" })
 
 
 (defprotocol Cache
@@ -28,15 +28,6 @@
   (del [this key & fns] "Delete a value from a cache by a specified key"))
 
 
-(defn new-client
-  [options]
-  (-> options
-      (merge default-options options)
-      validate-options
-      (SyncClient.)))
-
-(defn new-async-client
-  [options])
-
 (defn validate-options
-  [opt]))
+  [opt]
+  "test")
