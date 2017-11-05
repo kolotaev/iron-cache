@@ -4,8 +4,8 @@
 
 
 (defrecord SyncClient [opts]
+
   Cache
   CacheKey
 
-  (list [this]
-    ))
+  (list [this]))
