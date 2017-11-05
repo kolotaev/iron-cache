@@ -1,9 +1,11 @@
-(ns iron-cache.sync)
+(ns iron-cache.sync
+  (:require [iron-cache.core :refer :all]
+            [clj-http.client :as http]))
 
-(:require [clj-http.client :as http])
 
-(defrecord Cache [opts]
+(defrecord SyncClient [opts]
   Cache
   CacheKey
 
-  (defn list))
+  (list [this]
+    ))

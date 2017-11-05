@@ -1,4 +1,5 @@
-(ns iron-cache.core)
+(ns iron-cache.core
+  (:require [iron-cache.sync])
 
 (def ^:const ROOT_URL "cache-aws-us-east-1.iron.io/1")
 
@@ -29,7 +30,13 @@
 
 (defn new-client
   [options]
-  (Cache. (merge default-options options)))
+  (-> options
+      (merge default-options options)
+      validate-options
+      (SyncClient.)))
 
 (defn new-async-client
   [options])
+
+(defn validate-options
+  [opt]))
