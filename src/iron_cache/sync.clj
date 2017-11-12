@@ -5,8 +5,8 @@
 
 (defrecord SyncClient [opts]
 
-;  Cache
-;  Key
+  Cache
+  Key
 
 ;  (list [this])
   )
@@ -18,3 +18,8 @@
     (merge default-options options)
     validate-options
     SyncClient.))
+
+(defn- validate-options
+  [{:keys [] :as options}]
+  "Validates input options. Throws ex if options are inappropriate for client to work."
+  )

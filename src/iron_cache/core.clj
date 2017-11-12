@@ -26,8 +26,3 @@
   (get [this & fns] "Get a value stored in a keyfrom a cache")
   (incr [this key & fns] "Increment value in a cache by a specified key")
   (del [this key & fns] "Delete a value from a cache by a specified key"))
-
-
-(defn validate-options
-  [opt]
-  "test")
