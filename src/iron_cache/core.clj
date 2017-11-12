@@ -3,7 +3,7 @@
 
 (def ^:const ROOT_URL "cache-aws-us-east-1.iron.io/1")
 
-(def ^:const default-options
+(def ^:const DEFAULTS
             { :scheme "https"
               :host ROOT_URL
               :port 443

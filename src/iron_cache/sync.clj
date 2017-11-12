@@ -5,8 +5,8 @@
 
 (defrecord SyncClient [opts]
 
-  Cache
-  Key
+;  Cache
+;  Key
 
 ;  (list [this])
   )
@@ -15,11 +15,14 @@
 (defn new-client
   [options]
   (-> options
-    (merge default-options options)
+    (merge DEFAULTS options)
     validate-options
-    SyncClient.))
+    ->SyncClient))
 
 (defn- validate-options
-  [{:keys [] :as options}]
+  [{:keys [project token] :as config}]
   "Validates input options. Throws ex if options are inappropriate for client to work."
-  )
+  (when-not project
+    (throw (ex-info "A project must be specified." config)))
+  (when-not token
+    (throw (ex-info "An OAuth2 token must be provided." config))))
