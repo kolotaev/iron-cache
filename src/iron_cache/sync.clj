@@ -5,10 +5,11 @@
 
 (defrecord SyncClient [opts]
 
-  Cache
-  CacheKey
+;  Cache
+;  Key
 
-  (list [this]))
+;  (list [this])
+  )
 
 
 (defn new-client
@@ -16,4 +17,4 @@
   (-> options
     (merge default-options options)
     validate-options
-    (SyncClient.)))
+    SyncClient.))

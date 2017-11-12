@@ -20,7 +20,7 @@
   (clear! [this & fns] "Clear a cache"))
 
 
-(defprotocol CacheKey
+(defprotocol Key
   "Iron cache instance keys manipulation"
   (put [this key val & fns] "Add key/value pair to a cache")
   (get [this & fns] "Get a value stored in a keyfrom a cache")
