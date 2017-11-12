@@ -5,16 +5,17 @@
 
 
 (deftest create-client
-  (testing "created client is not nil"
-    (is (some? (ics/new-client {}))))
+  (let [config {:project "foo" :token "123"}]
+    (testing "created client is not nil"
+      (is (some? (ics/new-client config))))
 
-  (testing "created client satisfies Cache protocol"
-    (is (satisfies? iron-cache.core/Key (ics/new-client {}))))
+    (testing "created client satisfies Cache protocol"
+      (is (satisfies? iron-cache.core/Key (ics/new-client config))))
 
-  (testing "created client satisfies Key protocol"
-    (is (satisfies? iron-cache.core/Cache (ics/new-client {})))))
+    (testing "created client satisfies Key protocol"
+      (is (satisfies? iron-cache.core/Cache (ics/new-client config))))))
 
 
 (deftest validate-options
   (testing "empty config isn't valid"
-    (throws-excpeption Exception. (ics/validate-options {}))))
+    (is (thrown? Exception (ics/validate-options {})))))
