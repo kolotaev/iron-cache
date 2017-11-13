@@ -13,9 +13,8 @@
       (is (satisfies? iron-cache.core/Key (ics/new-client config))))
 
     (testing "created client satisfies Key protocol"
-      (is (satisfies? iron-cache.core/Cache (ics/new-client config))))))
+      (is (satisfies? iron-cache.core/Cache (ics/new-client config)))))
 
-
-(deftest validate-options
   (testing "empty config isn't valid"
-    (is (thrown? Exception (ics/validate-options {})))))
+    (is (thrown? Exception (ics/new-client {})))))
+
