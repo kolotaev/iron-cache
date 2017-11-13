@@ -1,15 +1,26 @@
 (ns iron-cache.sync
   (:require [iron-cache.core :refer :all]
-            [clj-http.client :as http]))
+            [clj-http.client :as http-client]
+            [clojure.string :as str]))
 
 
 (defrecord SyncClient [opts]
 
-;  Cache
+  Cache
 ;  Key
 
-;  (list [this])
-  )
+  (list [this & cbs]
+    (let [url (format "projects/%s/caches" {:project opts})]
+      )))
+
+
+(defn- http
+  "Get a prepared http-client object to make requests to a server."
+  [opts]
+  (fn [method uri]
+    (http-client method
+      (format "%s:%/%s" (str/replace {:host opts} #"/$" "") {:port opts} uri)
+      {})))
 
 
 (defn- options-from-env
