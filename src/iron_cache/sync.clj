@@ -10,7 +10,16 @@
 ;  Key
 
   (list [this & cbs]
-    (http "projects/%s/caches" {:project opts})))
+    (http :get (format "projects/%s/caches" {:project opts})))
+
+  (info [this cache & cbs]
+    (http :get (format "projects/%s/caches/%s" {:project opts} cache)))
+
+  (delete! [this cache & cbs]
+    (http :delete (format "projects/%s/caches/%s" {:project opts} cache)))
+
+  (clear! [this cache & cbs]
+    (http :post (format "projects/%s/caches/%s/clear" {:project opts} cache))))
 
 
 (defn- get-http
@@ -24,7 +33,7 @@
       (case method
         :get    (http-client/get {:headers headers :coerce coerce})
         :delete (http-client/delete {:headers headers :coerce coerce})))
-    (fn [method uri payload]
+    (fn [method uri & payload]
       (case method
         :post (http-client/post {:headers headers :coerce coerce})
         :put  (http-client/put {:headers headers :coerce coerce}))))
