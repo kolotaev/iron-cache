@@ -4,23 +4,30 @@
             [clojure.string :as str]))
 
 
-(defrecord SyncClient [opts]
+(defrecord SyncClient [opts http]
 
   Cache
 ;  Key
 
   (list [this & cbs]
-    (let [url (format "projects/%s/caches" {:project opts})]
-      )))
+    (http "projects/%s/caches" {:project opts})))
 
 
-(defn- http
+(defn- get-http
   "Get a prepared http-client object to make requests to a server."
   [opts]
-  (fn [method uri]
-    (http-client method
-      (format "%s:%/%s" (str/replace {:host opts} #"/$" "") {:port opts} uri)
-      {})))
+  (let [url (str (str/replace (:host opts) #"/$" "") ":" (:port opts))
+        resource #(format "%s/%s" url %)
+        headers {:oauth-token (:token opts)}
+        coerce {:as :json}]
+    (fn [method uri]
+      (case method
+        :get    (http-client/get {:headers headers :coerce coerce})
+        :delete (http-client/delete {:headers headers :coerce coerce})))
+    (fn [method uri payload]
+      (case method
+        :post (http-client/post {:headers headers :coerce coerce})
+        :put  (http-client/put {:headers headers :coerce coerce}))))
 
 
 (defn- options-from-env
@@ -43,7 +50,6 @@
   "Creates a new client with a given options.
   Throws exception if can't create one based on given options."
   [options]
-  (-> options
-    (merge DEFAULTS (options-from-env) options)
-    validate-options
-    ->SyncClient))
+  (let [opts (-> options (merge DEFAULTS (options-from-env) options) validate-options)
+        http (get-http opts)]
+    ->SyncClient opts http)))
