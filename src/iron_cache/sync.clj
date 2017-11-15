@@ -1,4 +1,5 @@
 (ns iron-cache.sync
+  (:refer-clojure :exclude [get list])
   (:require [iron-cache.core :refer :all]
             [clj-http.client :as http-client]
             [clojure.string :as str]))
@@ -29,14 +30,12 @@
         resource #(format "%s/%s" url %)
         headers {:oauth-token (:token opts)}
         coerce {:as :json}]
-    (fn [method uri]
-      (case method
-        :get    (http-client/get {:headers headers :coerce coerce})
-        :delete (http-client/delete {:headers headers :coerce coerce})))
     (fn [method uri & payload]
       (case method
-        :post (http-client/post {:headers headers :coerce coerce})
-        :put  (http-client/put {:headers headers :coerce coerce}))))
+        :get    (http-client/get (resource uri) {:headers headers :coerce coerce})
+        :delete (http-client/delete (resource uri) {:headers headers :coerce coerce})
+        :post   (http-client/post (resource uri) {:headers headers :coerce coerce})
+        :put    (http-client/put (resource uri) {:headers headers :coerce coerce})))))
 
 
 (defn- options-from-env
@@ -58,7 +57,7 @@
 (defn new-client
   "Creates a new client with a given options.
   Throws exception if can't create one based on given options."
-  [options]
-  (let [opts (-> options (merge DEFAULTS (options-from-env) options) validate-options)
-        http (get-http opts)]
-    ->SyncClient opts http)))
+  [config]
+  (let [opts (validate-options (merge DEFAULTS (options-from-env) config))
+        http #()]
+    (SyncClient. opts http)))
