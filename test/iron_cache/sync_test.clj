@@ -13,7 +13,10 @@
       (is (satisfies? iron-cache.core/Key (ics/new-client config))))
 
     (testing "created client satisfies Key protocol"
-      (is (satisfies? iron-cache.core/Cache (ics/new-client config)))))
+      (is (satisfies? iron-cache.core/Cache (ics/new-client config))))
+
+    (testing "created client has a http-requester"
+      (is (function? (:http (ics/new-client config))))))
 
   (testing "empty config isn't valid"
     (is (thrown? Exception (ics/new-client {})))))
