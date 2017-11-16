@@ -42,13 +42,24 @@
   (let [url (str (str/replace (:host opts) #"/$" "") ":" (:port opts))
         resource #(format "%s/%s" url %)
         headers {:oauth-token (:token opts)}
-        coerce {:as :json}]
+        coerce {:as :json}
+        client-params {"http.useragent" (:user_agent opts)}]
     (fn [method uri & payload]
-      (case method
-        :get    (http-client/get (resource uri) {:headers headers :coerce coerce})
-        :delete (http-client/delete (resource uri) {:headers headers :coerce coerce})
-        :post   (http-client/post (resource uri) {:headers headers :coerce coerce})
-        :put    (http-client/put (resource uri) {:headers headers :coerce coerce})))))
+      (let [full-url (resource uri)
+            http-conf {:headers headers
+                       :coerce coerce
+                       :client-params client-params
+                       :content-type :json
+                       :socket-timeout 1000 ; ms
+                       :conn-timeout 1000   ; ms
+                       :accept :json}
+            data {:body payload}
+            conf-and-data (merge http-conf data)]
+        (case method
+          :get    (http-client/get full-url conf-and-data)
+          :delete (http-client/delete full-url conf-and-data)
+          :post   (http-client/post full-url conf-and-data)
+          :put    (http-client/put full-url conf-and-data))))))
 
 
 (defn- options-from-env
