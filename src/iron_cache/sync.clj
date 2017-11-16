@@ -64,7 +64,8 @@
   (when-not project
     (throw (ex-info "A project must be specified." {:given config})))
   (when-not token
-    (throw (ex-info "An OAuth2 token must be provided." {:given config}))))
+    (throw (ex-info "An OAuth2 token must be provided." {:given config})))
+  config)
 
 
 (defn new-client
@@ -72,5 +73,5 @@
   Throws exception if can't create one based on given options."
   [config]
   (let [opts (validate-options (merge DEFAULTS (options-from-env) config))
-        http #()]
+        http (get-http opts)]
     (SyncClient. opts http)))
