@@ -12,4 +12,10 @@
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [clj-http "3.7.0"]
-                 [http.async.client "1.2.0"]])
+                 [http.async.client "1.2.0"]]
+
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
+;                                  [ring/ring-codec "1.0.1"]
+                                  [ring/ring-jetty-adapter "1.6.1"]
+;                                  [ring/ring-devel "1.6.1"]
+                                  ]}})

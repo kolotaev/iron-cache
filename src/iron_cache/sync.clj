@@ -82,4 +82,4 @@
   [config]
   (let [opts (validate-options (merge DEFAULTS (options-from-env) config))
         http (get-http opts)]
-    (SyncClient. opts http)))
+    (->SyncClient opts http)))
