@@ -14,8 +14,11 @@
                  [clj-http "3.7.0"]
                  [http.async.client "1.2.0"]]
 
-  :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
+  :profiles {:dev {:dependencies [
+;                                  [org.clojure/clojure "1.8.0"]
 ;                                  [ring/ring-codec "1.0.1"]
+;[org.clojure/tools.logging "0.3.1"]
+[log4j "1.2.17"]
                                   [ring/ring-jetty-adapter "1.6.1"]
 ;                                  [ring/ring-devel "1.6.1"]
                                   ]}})
