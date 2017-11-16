@@ -8,7 +8,6 @@
 (defrecord SyncClient [opts http]
 
   Cache
-;  Key
 
   (list [this & cbs]
     (http :get (format "projects/%s/caches" {:project opts})))
@@ -20,7 +19,21 @@
     (http :delete (format "projects/%s/caches/%s" {:project opts} cache)))
 
   (clear! [this cache & cbs]
-    (http :post (format "projects/%s/caches/%s/clear" {:project opts} cache))))
+    (http :post (format "projects/%s/caches/%s/clear" {:project opts} cache)))
+
+  Key
+
+  (get [this cache key & cbs]
+    (http :get (format "projects/%s/caches/%s/items/%s" {:project opts} cache key)))
+
+  (put [this cache key val & cbs]
+    (http :put (format "projects/%s/caches/%s/items/%s" {:project opts} cache key) val))
+
+  (incr [this cache key val & cbs]
+    (http :post (format "projects/%s/caches/%s/items/%s" {:project opts} cache key) {:amount val}))
+
+  (del [this cache key & cbs]
+    (http :delete (format "projects/%s/caches/%s/items/%s" {:project opts} cache key))))
 
 
 (defn- get-http

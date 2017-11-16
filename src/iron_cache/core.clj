@@ -22,7 +22,7 @@
 
 (defprotocol Key
   "Iron cache instance keys manipulation"
-  (put [this key val & cbs] "Add key/value pair to a cache")
-  (get [this & cbs] "Get a value stored in a keyfrom a cache")
-  (incr [this key & cbs] "Increment value in a cache by a specified key")
-  (del [this key & cbs] "Delete a value from a cache by a specified key"))
+  (get [this cache key & cbs] "Get a value stored in a keyfrom a cache")
+  (put [this cache key val & cbs] "Add key/value pair to a cache")
+  (incr [this cache key val & cbs] "Increment value in a cache by a specified key")
+  (del [this cache key & cbs] "Delete a value from a cache by a specified key"))
