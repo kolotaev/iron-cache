@@ -41,20 +41,17 @@
   [opts]
   (let [url (str (str/replace (:host opts) #"/$" "") ":" (:port opts))
         resource #(format "%s/%s" url %)
-        headers {:oauth-token (:token opts)}
+        headers {:oauth-token (:token opts) :content-type :json :accept :json}
         coerce {:as :json}
-        client-params {"http.useragent" (:user_agent opts)}]
-    (fn [method uri & payload]
-      (let [full-url (resource uri)
-            http-conf {:headers headers
+        client-params {:http.useragent (:user_agent opts) :socket-timeout 1000 :conn-timeout 1000}]
+    (fn [method uri & [payload cbs]]
+      (let [callbacks (or cbs nil)
+            full-url (resource uri)
+            conf-and-data {:async? (map? callbacks)
+                       :headers headers
                        :coerce coerce
                        :client-params client-params
-                       :content-type :json
-                       :socket-timeout 1000 ; ms
-                       :conn-timeout 1000   ; ms
-                       :accept :json}
-            data {:body payload}
-            conf-and-data (merge http-conf data)]
+                       :body payload}]
         (case method
           :get    (http-client/get full-url conf-and-data)
           :delete (http-client/delete full-url conf-and-data)
