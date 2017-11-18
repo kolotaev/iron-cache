@@ -16,8 +16,8 @@
 (deftest ^:integration foo-bar
   (run-server)
   (let [resp (http-client/request {:scheme :http
-                              :server-name "localhost"
-                              :server-port 19980
-                              :request-method :get :uri "/foo"
-                              :content-type "text/plain"})]
+                                   :server-name "localhost"
+                                   :server-port 19980
+                                   :request-method :get :uri "/foo"
+                                   :content-type "text/plain"})]
     (is (= "foo!" (:body resp)))))
