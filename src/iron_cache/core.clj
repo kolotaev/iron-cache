@@ -1,10 +1,10 @@
 (ns iron-cache.core
   (:refer-clojure :exclude [get list])
-  (:require [iron-cache.http :refer :all]
-            [iron-cache.protocol :refer :all]))
+  (:require [iron-cache.protocol :refer :all]
+            [clj-http.client :as http-client]))
 
 
-(def ^:const ROOT_URL "cache-aws-us-east-1.iron.io/1")
+(def ^:const ROOT_URL "cache-aws-us-east-1.iron.io")
 
 
 (def ^:const DEFAULTS
@@ -12,39 +12,43 @@
    :host ROOT_URL
    :port 443
    :api_version 1
-   :user_agent "iron_cache_clj"
-   :cache_name "default"})
+   :http-options {:client-params {"http.useragent" "iron_cache_clj_client"}
+                  :content-type :json
+                  :accept :json
+                  :as :json
+                  :throw-exceptions false
+                  :coerce {:as :json}}})
 
 
-(defrecord Client [opts http]
+(defrecord Client [http]
 
   Cache
 
   (list [this & cbs]
-    (http :get (format "projects/%s/caches" {:project opts})))
+    (http :get (format "caches")))
 
   (info [this cache & cbs]
-    (http :get (format "projects/%s/caches/%s" {:project opts} cache)))
+    (http :get (format "caches/%s" cache)))
 
   (delete! [this cache & cbs]
-    (http :delete (format "projects/%s/caches/%s" {:project opts} cache)))
+    (http :delete (format "caches/%s" cache)))
 
   (clear! [this cache & cbs]
-    (http :post (format "projects/%s/caches/%s/clear" {:project opts} cache)))
+    (http :post (format "caches/%s/clear" cache)))
 
   Key
 
   (get [this cache key & cbs]
-    (http :get (format "projects/%s/caches/%s/items/%s" {:project opts} cache key)))
+    (http :get (format "caches/%s/items/%s" cache key)))
 
   (put [this cache key val & cbs]
-    (http :put (format "projects/%s/caches/%s/items/%s" {:project opts} cache key) val))
+    (http :put (format "caches/%s/items/%s" cache key) val))
 
   (incr [this cache key val & cbs]
-    (http :post (format "projects/%s/caches/%s/items/%s" {:project opts} cache key) {:amount val}))
+    (http :post (format "caches/%s/items/%s" cache key) {:amount val}))
 
   (del [this cache key & cbs]
-    (http :delete (format "projects/%s/caches/%s/items/%s" {:project opts} cache key))))
+    (http :delete (format "caches/%s/items/%s" cache key))))
 
 
 (defn- options-from-env
@@ -64,10 +68,33 @@
   config)
 
 
+(defn- make-requester
+  "Get a prepared clj http-client to make requests to a server."
+  [opts]
+  (let [scheme (:scheme opts)
+        host (:host opts)
+        port (:port opts)
+        make-uri #(format "%s/%s/%s/" (:api_version opts) (:project opts) %)
+        headers {:oauth-token (:token opts), :content-type :json, :accept :json}
+        client-params (:http-options opts)]
+    (fn [method uri & [payload cbs]]
+      (http-client/request {:scheme scheme
+                            :server-name host
+                            :server-port port
+                            :request-method method
+                            :uri (make-uri uri)
+                            :async? (map? (or cbs nil))
+                            :headers headers
+                            ; ToDo: make merge
+                            ; :coerce {:as :json}
+                            ; :client-params client-params
+                            :body payload}))))
+
+
 (defn new-client
   "Creates a new client with a given options.
   Throws exception if can't create one based on given options."
   [config]
   (let [opts (validate-options (merge DEFAULTS (options-from-env) config))
         http (make-requester opts)]
-    (->Client opts http)))
+    (->Client http)))
