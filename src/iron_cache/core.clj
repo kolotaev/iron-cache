@@ -4,10 +4,10 @@
             [clj-http.client :as http-client]))
 
 
-(def ^:const ROOT_URL "cache-aws-us-east-1.iron.io")
+(def ^:const ^:private ROOT_URL "cache-aws-us-east-1.iron.io")
 
 
-(def ^:const DEFAULTS
+(def ^:const ^:private DEFAULTS
   {:scheme "https"
    :host ROOT_URL
    :port 443
@@ -71,30 +71,33 @@
 (defn- make-requester
   "Get a prepared clj http-client to make requests to a server."
   [opts]
-  (let [scheme (:scheme opts)
-        host (:host opts)
-        port (:port opts)
-        make-uri #(format "%s/%s/%s/" (:api_version opts) (:project opts) %)
-        headers {:oauth-token (:token opts), :content-type :json, :accept :json}
-        client-params (:http-options opts)]
+  (let [all-options (merge (:http-options opts)
+                      {:scheme (:scheme opts)
+                       :server-name (:host opts)
+                       :server-port (:port opts)
+                       :headers {:oauth-token (:token opts), :content-type :json, :accept :json}})
+        make-uri #(format "%s/%s/%s/" (:api_version opts) (:project opts) %)]
     (fn [method uri & [payload cbs]]
-      (http-client/request {:scheme scheme
-                            :server-name host
-                            :server-port port
-                            :request-method method
-                            :uri (make-uri uri)
-                            :async? (map? (or cbs nil))
-                            :headers headers
-                            ; ToDo: make merge
-                            ; :coerce {:as :json}
-                            ; :client-params client-params
-                            :body payload}))))
+      (-> all-options
+          into {:request-method method
+                :uri (make-uri uri)
+                :async? (map? (or cbs nil))
+                :body payload}
+          http-client/request))))
+
+
+(defn- deep-merge
+  "Deeply merges maps so that nested maps are combined rather than replaced."
+  [& vs]
+  (if (every? map? vs)
+    (apply merge-with deep-merge vs)
+    (last vs)))
 
 
 (defn new-client
   "Creates a new client with a given options.
   Throws exception if can't create one based on given options."
   [config]
-  (let [opts (validate-options (merge DEFAULTS (options-from-env) config))
+  (let [opts (validate-options (deep-merge DEFAULTS (options-from-env) config))
         http (make-requester opts)]
     (->Client http)))
