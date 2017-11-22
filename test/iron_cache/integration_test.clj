@@ -3,14 +3,14 @@
             [iron-cache.core :refer :all]
             [ring.adapter.jetty :as ring]))
 
-(defn iron-server-mock-handler [req]
-  (condp = [(:request-method req) (:uri req)]
-    [:get "/foo"]
-    {:status 200 :body "foo!"}))
-
-(defn run-server []
-  (defonce server
-    (ring/run-jetty iron-server-mock-handler {:port 19980 :join? false})))
+;(defn iron-server-mock-handler [req]
+;  (condp = [(:request-method req) (:uri req)]
+;    [:get "/foo"]
+;    {:status 200 :body "foo!"}))
+;
+;(defn run-server []
+;  (defonce server
+;    (ring/run-jetty iron-server-mock-handler {:port 19980 :join? false})))
 
 
 ;(deftest ^:integration foo-bar

@@ -9,6 +9,7 @@
   (delete! [this cache & cbs] "Delete a cache")
   (clear! [this cache & cbs] "Clear a cache"))
 
+
 (defprotocol Key
   "Iron cache instance keys manipulation"
   (get [this cache key & cbs] "Get a value stored in a key from a cache")

@@ -3,9 +3,12 @@
   (:require [iron-cache.protocol :refer :all]
             [clj-http.client :as http-client]))
 
+(declare deep-merge env)
+
+
+;;; Configuration defaults ;;;
 
 (def ^:const ^:private ROOT_URL "cache-aws-us-east-1.iron.io")
-
 
 (def ^:const ^:private DEFAULTS
   {:scheme "https"
@@ -20,7 +23,9 @@
                   :coerce {:as :json}}})
 
 
-(defrecord Client [http]
+;;; Clent record ;;;
+
+(defrecord Client [http config]
 
   Cache
 
@@ -51,11 +56,13 @@
     (http :delete (format "caches/%s/items/%s" cache key))))
 
 
+;;; Main functionality ;;;
+
 (defn- options-from-env
   "Get token and project name out of environment variables."
   []
-  {:project (System/getenv "IRON_CACHE_PROJECT")
-   :token (System/getenv "IRON_CACHE_TOKEN")})
+  {:project (env "IRON_CACHE_PROJECT")
+   :token (env "IRON_CACHE_TOKEN")})
 
 
 (defn- validate-options
@@ -72,10 +79,10 @@
   "Get a prepared clj http-client to make requests to a server."
   [opts]
   (let [all-options (merge (:http-options opts)
-                      {:scheme (:scheme opts)
-                       :server-name (:host opts)
-                       :server-port (:port opts)
-                       :headers {:oauth-token (:token opts), :content-type :json, :accept :json}})
+                           {:scheme (:scheme opts)
+                            :server-name (:host opts)
+                            :server-port (:port opts)
+                            :headers {:oauth-token (:token opts), :content-type :json, :accept :json}})
         make-uri #(format "%s/%s/%s/" (:api_version opts) (:project opts) %)]
     (fn [method uri & [payload cbs]]
       (-> all-options
@@ -86,18 +93,26 @@
           http-client/request))))
 
 
-(defn- deep-merge
-  "Deeply merges maps so that nested maps are combined rather than replaced."
-  [& vs]
-  (if (every? map? vs)
-    (apply merge-with deep-merge vs)
-    (last vs)))
-
-
 (defn new-client
   "Creates a new client with a given options.
   Throws exception if can't create one based on given options."
   [config]
   (let [opts (validate-options (deep-merge DEFAULTS (options-from-env) config))
         http (make-requester opts)]
-    (->Client http)))
+    (->Client http opts)))
+
+
+;;; Utility functions ;;;
+
+(defn- env
+  "System/getenv wrapper"
+  [key]
+  (System/getenv key))
+
+
+(defn- deep-merge
+  "Deeply merges maps so that nested maps are combined rather than replaced."
+  [& vs]
+  (if (every? map? vs)
+    (apply merge-with deep-merge vs)
+    (last vs)))
