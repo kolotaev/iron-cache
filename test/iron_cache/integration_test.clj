@@ -1,23 +1,18 @@
 (ns iron-cache.integration-test
+  (:use clj-http.fake)
   (:require [clojure.test :refer :all]
-            [iron-cache.core :refer :all]
-            [ring.adapter.jetty :as ring]))
-
-;(defn iron-server-mock-handler [req]
-;  (condp = [(:request-method req) (:uri req)]
-;    [:get "/foo"]
-;    {:status 200 :body "foo!"}))
-;
-;(defn run-server []
-;  (defonce server
-;    (ring/run-jetty iron-server-mock-handler {:port 19980 :join? false})))
+            [iron-cache.core :as ic]))
 
 
-;(deftest ^:integration foo-bar
-;  (run-server)
-;  (let [resp (http-client/request {:scheme :http
-;                                   :server-name "localhost"
-;                                   :server-port 19980
-;                                   :request-method :get :uri "/foo"
-;                                   :content-type "text/plain"})]
-;    (is (= "foo!" (:body resp)))))
+(defonce client (ic/new-client {:project "a" :token "b"}))
+
+(defonce valid-server-url (str "https://" @#'ic/ROOT_URL "/1"))
+
+(def list-200
+  {"http://cache-aws-us-east-1.iron.io/1" (fn [_] {:status 200 :headers {} :body "kk"})})
+
+
+(deftest list
+  (testing "basic cache list"
+    (with-fake-routes list-200
+      (is (= "" (ic/list client))))))

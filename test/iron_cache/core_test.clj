@@ -1,7 +1,6 @@
 (ns iron-cache.core-test
   (:require [clojure.test :refer :all]
-            [iron-cache.core :as ic]
-            [iron-cache.protocol :refer :all]))
+            [iron-cache.core :as ic]))
 
 
 (defn- map-subset? [a b]
@@ -15,10 +14,10 @@
       (is (some? (ic/new-client config))))
 
     (testing "created client satisfies Cache protocol"
-      (is (satisfies? Cache (ic/new-client config))))
+      (is (satisfies? ic/Cache (ic/new-client config))))
 
     (testing "created client satisfies Key protocol"
-      (is (satisfies? Key (ic/new-client config))))
+      (is (satisfies? ic/Key (ic/new-client config))))
 
     (testing "created client has a http-requester function"
       (is (function? (:http (ic/new-client config)))))))
