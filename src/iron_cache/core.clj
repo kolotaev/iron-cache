@@ -96,27 +96,16 @@
   "Get a prepared clj http-client to make requests to a server."
   [opts]
   (let [all-options (merge (:http-options opts)
-                           {:scheme (:scheme opts)
-                            :server-name (:host opts)
-                            :server-port (:port opts)
+                           {:server-port (:port opts)
                             :headers {:oauth-token (:token opts), :content-type :json, :accept :json}})
-        make-uri #(format "%s/%s/%s/" (:api_version opts) (:project opts) %)]
+        make-url #(format "%s://%s/%s/%s/%s" (:scheme opts) (:host opts) (:api_version opts) (:project opts) %)]
     (fn [method uri & [payload cbs]]
-;      (-> all-options
-;        merge {:request-method method
-;               :url (make-uri uri)
-;               ;                :async? (map? (or cbs nil))
-;               ;                :body payload
-;               }
-;        http-client/request)
-
-      (http-client/request {:request-method method
-       :url (make-uri uri)
-       ;                :async? (map? (or cbs nil))
-       ;                :body payload
-       })
-
-      )))
+      (-> all-options
+        (into {:request-method method
+               :url (make-url uri)
+               :async? (map? (or cbs nil))
+               :body payload})
+        http-client/request))))
 
 
 (defn new-client

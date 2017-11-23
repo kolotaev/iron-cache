@@ -4,12 +4,12 @@
             [iron-cache.core :as ic]))
 
 
-(defonce client (ic/new-client {:project "a" :token "b"}))
+(defonce client (ic/new-client {:project "acme" :token "b"}))
 
 (defonce valid-server-url (str "https://" @#'ic/ROOT_URL "/1"))
 
 (def list-200
-  {"http://cache-aws-us-east-1.iron.io/1" (fn [_] {:status 200 :headers {} :body "kk"})})
+  {(str valid-server-url "/acme/caches") (fn [_] {:status 200 :headers {} :body "kk"})})
 
 
 (deftest list
