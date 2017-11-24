@@ -7,11 +7,10 @@
 
 ;;; Configuration defaults ;;;
 
-(def ^:const ^:private ROOT_URL "cache-aws-us-east-1.iron.io")
+(def ^:const ^:private ROOT_URL "https://cache-aws-us-east-1.iron.io")
 
 (def ^:const ^:private DEFAULTS
-  {:scheme "https"
-   :host ROOT_URL
+  {:host ROOT_URL
    :port 443
    :api_version 1
    :http-options {:client-params {"http.useragent" "iron_cache_clj_client"}
@@ -107,19 +106,19 @@
   [opts]
   (let [all-options (merge (:http-options opts)
                            {:server-port (:port opts)
-                            :headers {:oauth-token (:token opts)
+                            :headers {"OAuth" (:token opts)
                                       :content-type :json
                                       :accept :json}})
-        make-url #(format "%s://%s/%s/%s/%s" (:scheme opts) (:host opts) (:api_version opts) (:project opts) %)]
+        make-url #(format "%s/%s/%s/%s" (:host opts) (:api_version opts) (:project opts) %)]
 
     (fn [method uri & [payload cbs]]
       (-> all-options
-        (into {:request-method method
-               :url (make-url uri)
-               :async? (map? (or cbs nil))
-               :body payload})
-        http-client/request
-        process-response))))
+          (into {:request-method method
+                 :url (make-url uri)
+                 :async? (map? (or cbs nil))
+                 :body payload})
+          http-client/request
+          process-response))))
 
 
 (defn new-client
@@ -129,6 +128,16 @@
   (let [opts (validate-options (deep-merge DEFAULTS (options-from-env) config))
         http (make-requester opts)]
     (->Client http opts)))
+
+
+;(defmacro with-client
+;  "Allows you to call Iron Cache functions with a specific client.
+;  You can pass a client instance or a configuration map that will instantiate a client"
+;  [x & body]
+;  `(let [client# (if (map? ~x)
+;                   (new-client ~x)
+;                   @~x)]
+;    (-> client# ~@body)))
 
 
 ;;; Utility functions ;;;

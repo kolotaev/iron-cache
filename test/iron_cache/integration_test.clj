@@ -1,15 +1,23 @@
 (ns iron-cache.integration-test
   (:use clj-http.fake)
   (:require [clojure.test :refer :all]
-            [iron-cache.core :as ic]))
+            [iron-cache.core :as ic]
+            [cheshire.core :as json]))
 
 
 (defn- response [file-name]
   (slurp (str "test/responses/" file-name)))
 
-(defonce client (ic/new-client {:project "amiga" :token "abcd-abcd-abcd"}))
+(defonce client (ic/new-client {:project "amiga" :token "abcd-asdf-qwer"}))
 
-(defonce valid-server-url (str "https://" @#'ic/ROOT_URL "/1"))
+(defonce valid-server-url (str @#'ic/ROOT_URL "/1"))
+
+
+;; Mock Routes ;;
+
+(def echo
+  {(str valid-server-url "/amiga/caches")
+   (fn [req] {:body (-> {:original-request req} json/generate-string)})})
 
 (def list-200
   {(str valid-server-url "/amiga/caches") (fn [_] {:status 200 :body (response "list-200")})})
@@ -24,7 +32,56 @@
   {(str valid-server-url "/amiga/caches") (fn [_] {:status 500 :body (response "list-500")})})
 
 
-(deftest test-list
+;; Tests ;;
+
+;(deftest with-client-macro
+;  (testing "with-client macro, given a client instance, performs correct requests"
+;    (with-fake-routes list-200
+;      (ic/with-client client
+;        (is (= 200 (-> ic/list :status)))
+;        (is (= "a" (-> ic/list :msg first :name))))))
+;
+;  (testing "with-client macro, given a client instance, performs correct requests"
+;    (with-fake-routes list-200
+;      (ic/with-client {:project "amiga" :token "my-token"}
+;        (is (= 200 (-> ic/list :status)))
+;        (is (= "a" (-> ic/list :msg first :name))))))
+;  )
+
+
+(deftest request-sanity
+  (testing "Iron-cache client has only :status and :msg fields"
+    (with-fake-routes list-200
+      (let [resp (ic/list client)]
+        (is (= [:status :msg] (-> resp keys))))))
+
+  (testing "oauth2 token was sent correctly"
+    (with-fake-routes echo
+      (let [headers (-> client ic/list :msg :original-request :headers)]
+        (is (contains? headers :OAuth))
+        (is (= "abcd-asdf-qwer" (:OAuth headers))))))
+
+  (testing "content-type header is json"
+    (with-fake-routes echo
+      (let [headers (-> client ic/list :msg :original-request :headers)]
+        (is (contains? headers :content-type))
+        (is (= "application/json" (:content-type headers))))))
+
+  (testing "accept header is json"
+    (with-fake-routes echo
+      (let [headers (-> client ic/list :msg :original-request :headers)]
+        (is (contains? headers :accept))
+        (is (= "application/json" (:accept headers))))))
+
+  (testing "accept header is json"
+    (with-fake-routes echo
+      (let [headers (-> client ic/list :msg :original-request :headers)]
+        (is (contains? headers :accept))
+        (is (= "application/json" (:accept headers))))))
+  )
+
+
+(deftest cache-list
   (testing "correct list of caches"
     (with-fake-routes list-200
       (let [resp (ic/list client)]

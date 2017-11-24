@@ -52,8 +52,7 @@
 (deftest options-merge
   (with-redefs [ic/env (constantly "x")]
     (testing "base custom param overrides defaults"
-      (is (= {:scheme "https"
-              :host "cache-aws-us-east-1.iron.io"
+      (is (= {:host "https://cache-aws-us-east-1.iron.io"
               :port 443
               :api_version 2
               :http-options {:client-params {"http.useragent" "iron_cache_clj_client"}
@@ -67,8 +66,7 @@
              (-> {:api_version 2} ic/new-client :config))))
 
     (testing "several base custom params override defaults"
-      (is (= {:scheme "https"
-              :host "some-host"
+      (is (= {:host "some-host"
               :port 443
               :api_version 3
               :http-options {:client-params {"http.useragent" "iron_cache_clj_client"}
@@ -82,8 +80,7 @@
              (-> {:api_version 3 :host "some-host"} ic/new-client :config))))
 
     (testing "several base and some custom http-options override defaults"
-      (is (= {:scheme "https"
-              :host "cache-aws-us-east-1.iron.io"
+      (is (= {:host "https://cache-aws-us-east-1.iron.io"
               :port 443
               :api_version 3
               :http-options {:client-params {"foo" "bar", "http.useragent" "iron_cache_clj_client"}
@@ -100,8 +97,7 @@
                  ic/new-client :config))))
 
     (testing "several base and some custom http-options with token specified override defaults and env"
-      (is (= {:scheme "https"
-              :host "cache-aws-us-east-1.iron.io"
+      (is (= {:host "https://cache-aws-us-east-1.iron.io"
               :port 443
               :api_version 3
               :http-options {:client-params {"foo" "bar", "http.useragent" "clj"}
