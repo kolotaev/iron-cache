@@ -4,9 +4,8 @@
             [iron-cache.core :as ic]))
 
 
-(defn response [file-name]
+(defn- response [file-name]
   (slurp (str "test/responses/" file-name)))
-
 
 (defonce client (ic/new-client {:project "amiga" :token "abcd-abcd-abcd"}))
 
@@ -20,6 +19,9 @@
 
 (def list-401
   {(str valid-server-url "/amiga/caches") (fn [_] {:status 401 :body (response "list-401")})})
+
+(def list-500
+  {(str valid-server-url "/amiga/caches") (fn [_] {:status 500 :body (response "list-500")})})
 
 
 (deftest test-list
@@ -43,4 +45,9 @@
       (let [resp (ic/list client)]
         (is (= 401 (-> resp :status)))
         (is (= "You must be authorized" (-> resp :msg))))))
-  )
+
+  (testing "server went down"
+    (with-fake-routes list-500
+      (let [resp (ic/list client)]
+        (is (= 500 (-> resp :status)))
+        (is (= "Iron Server went down" (-> resp :msg)))))))
