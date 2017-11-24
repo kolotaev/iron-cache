@@ -11,6 +11,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [[org.clojure/clojure "1.8.0"]
+                 [cheshire "5.7.1"]
                  [clj-http "3.7.0"]]
 
   :profiles {:dev {:dependencies [[ring/ring-jetty-adapter "1.6.1"]

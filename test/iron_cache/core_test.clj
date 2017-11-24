@@ -61,7 +61,7 @@
                              :accept :json
                              :as :json
                              :throw-exceptions false
-                             :coerce {:as :json}}
+                             :coerce :always}
               :project "x"
               :token "x"}
              (-> {:api_version 2} ic/new-client :config))))
@@ -76,7 +76,7 @@
                              :accept :json
                              :as :json
                              :throw-exceptions false
-                             :coerce {:as :json}}
+                             :coerce :always}
               :project "x"
               :token "x"}
              (-> {:api_version 3 :host "some-host"} ic/new-client :config))))
@@ -91,12 +91,11 @@
                              :accept :transit
                              :as :json
                              :throw-exceptions false
-                             :coerce {:as :edn}}
+                             :coerce :always}
               :project "x"
               :token "x"}
              (-> {:api_version 3
-                  :http-options {:coerce {:as :edn}
-                                 :client-params {"foo" "bar"}
+                  :http-options {:client-params {"foo" "bar"}
                                  :accept :transit}}
                  ic/new-client :config))))
 
@@ -110,12 +109,12 @@
                              :accept :transit
                              :as :json
                              :throw-exceptions false
-                             :coerce {:as :edn}}
+                             :coerce :always}
               :project "x"
               :token "abc"}
              (-> {:api_version 3
                   :token "abc"
-                  :http-options {:coerce {:as :edn}
+                  :http-options {:coerce :always
                                  :client-params {"foo" "bar", "http.useragent" "clj"}
                                  :accept :transit}}
                  ic/new-client :config))))))

@@ -19,7 +19,7 @@
                   :accept :json
                   :as :json
                   :throw-exceptions false
-                  :coerce {:as :json}}})
+                  :coerce :always}})
 
 
 ;;; Protocols ;;;
@@ -92,20 +92,34 @@
   config)
 
 
+(defn- process-response
+  "Processes the response from the server"
+  [resp]
+  (let [status (:status resp)
+        body (:body resp)]
+    (if (= (/ status 100) 2)
+      {:status status, :msg body}
+      {:status status, :msg (:msg body)})))
+
+
 (defn- make-requester
   "Get a prepared clj http-client to make requests to a server."
   [opts]
   (let [all-options (merge (:http-options opts)
                            {:server-port (:port opts)
-                            :headers {:oauth-token (:token opts), :content-type :json, :accept :json}})
+                            :headers {:oauth-token (:token opts)
+                                      :content-type :json
+                                      :accept :json}})
         make-url #(format "%s://%s/%s/%s/%s" (:scheme opts) (:host opts) (:api_version opts) (:project opts) %)]
+
     (fn [method uri & [payload cbs]]
       (-> all-options
         (into {:request-method method
                :url (make-url uri)
                :async? (map? (or cbs nil))
                :body payload})
-        http-client/request))))
+        http-client/request
+        process-response))))
 
 
 (defn new-client

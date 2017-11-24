@@ -4,15 +4,43 @@
             [iron-cache.core :as ic]))
 
 
-(defonce client (ic/new-client {:project "acme" :token "b"}))
+(defn response [file-name]
+  (slurp (str "test/responses/" file-name)))
+
+
+(defonce client (ic/new-client {:project "amiga" :token "abcd-abcd-abcd"}))
 
 (defonce valid-server-url (str "https://" @#'ic/ROOT_URL "/1"))
 
 (def list-200
-  {(str valid-server-url "/acme/caches") (fn [_] {:status 200 :headers {} :body "kk"})})
+  {(str valid-server-url "/amiga/caches") (fn [_] {:status 200 :body (response "list-200")})})
+
+(def list-200-empty
+  {(str valid-server-url "/amiga/caches") (fn [_] {:status 200 :body "[]"})})
+
+(def list-401
+  {(str valid-server-url "/amiga/caches") (fn [_] {:status 401 :body (response "list-401")})})
 
 
-(deftest list
-  (testing "basic cache list"
+(deftest test-list
+  (testing "correct list of caches"
     (with-fake-routes list-200
-      (is (= "" (ic/list client))))))
+      (let [resp (ic/list client)]
+        (is (= 200 (-> resp :status)))
+        (is (= 2 (-> resp :msg count)))
+        (is (= "amiga" (-> resp :msg first :project_id)))
+        (is (= "b" (-> resp :msg last :name))))))
+
+  (testing "empty list of caches"
+    (with-fake-routes list-200-empty
+      (let [resp (ic/list client)]
+        (is (= 200 (-> resp :status)))
+        (is (= 0 (-> resp :msg count)))
+        (is (= nil (-> resp :msg first :project_id))))))
+
+  (testing "non-authorized request"
+    (with-fake-routes list-401
+      (let [resp (ic/list client)]
+        (is (= 401 (-> resp :status)))
+        (is (= "You must be authorized" (-> resp :msg))))))
+  )
