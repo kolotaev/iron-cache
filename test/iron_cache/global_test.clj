@@ -1,12 +1,13 @@
 (ns iron-cache.global-test
   (:use clj-http.fake)
+  (:refer-clojure :exclude [get list])
   (:require [clojure.test :refer :all]
-            [iron-cache.global :as gic]
-            [iron-cache.global :as core]
+            [iron-cache.global :refer :all]
+            [iron-cache.core :as core]
             [cheshire.core :as json]))
 
 
-(defonce valid-server-url (str @#'gic/ROOT_URL "/1"))
+(defonce valid-server-url (str @#'core/ROOT_URL "/1"))
 
 (defonce client (core/new-client {:project "amiga" :token "abcd-asdf-qwer"}))
 
@@ -23,32 +24,28 @@
 (deftest with-client-macro
   (testing "with-client macro, given a client instance, performs correct requests"
     (with-fake-routes list-200
-      (is (= {}       (gic/with-client client
-                        (gic/info "acme")
-                        ))))
-    )
-
-  (testing "with-client macro, given a client instance, performs correct requests"
-    (with-fake-routes list-200
       (let [items (atom [])
-            _ (gic/with-client client
-                (swap! items conj (-> gic/list))
-                (swap! items conj (-> gic/list)))]
-        (is (= {} @items)))
-      ))
+            status (atom 0)
+            _ (with-client client
+                (reset! status (:status (list)))
+                (swap! items conj (-> (list) :msg))
+                (swap! items conj (-> (list) :msg))
+                (swap! items conj (-> (list) :msg)))]
+        (is (= 200 @status))
+        (is (= 3 (count @items))))))
 
   (testing "with-client macro, given a client instance, uses a client's token"
     (with-fake-routes echo
-      (gic/with-client client
-        (is (= "abcd-asdf-qwer8" (-> gic/list :msg :original-request :headers :OAuth))))))
+      (with-client client
+        (is (= "abcd-asdf-qwer" (-> (list) :msg :original-request :headers :OAuth))))))
 
   (testing "with-client macro, given a config, performs correct requests"
     (with-fake-routes list-200
-      (gic/with-client {:project "amiga" :token "my-token"}
-        (is (= 2099990 (-> gic/list :status)))
-        (is (= "a" (-> gic/list :msg first :name))))))
+      (with-client {:project "amiga" :token "my-token"}
+        (is (= 200 (-> (list) :status)))
+        (is (= 123 (-> (list) :msg first :foo))))))
 
   (testing "with-client macro, given a config, uses a config's token"
     (with-fake-routes echo
-      (gic/with-client client
-        (is (= "my-token" (-> gic/list :msg :original-request :headers :OAuth)))))))
+      (with-client {:project "amiga" :token "my-token"}
+        (is (= "my-token" (-> (list) :msg :original-request :headers :OAuth)))))))

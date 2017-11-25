@@ -25,7 +25,7 @@
 
 (defprotocol Cache
   "Iron cache instance manipulation"
-  (list [this & cbs] "Get a list off all caches")
+  (list [this] "Get a list off all caches")
   (info [this cache & cbs] "Get information about a cache")
   (delete! [this cache & cbs] "Delete a cache")
   (clear! [this cache & cbs] "Clear a cache"))
@@ -45,7 +45,8 @@
 
   Cache
 
-  (list [this & cbs]
+  (list
+    [this]
     (http :get "caches"))
 
   (info [this cache & cbs]
