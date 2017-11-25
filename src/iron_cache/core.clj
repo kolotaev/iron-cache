@@ -25,7 +25,7 @@
 
 (defprotocol Cache
   "Iron cache instance manipulation"
-  (list [this] "Get a list off all caches")
+  (list [this & cbs] "Get a list off all caches")
   (info [this cache & cbs] "Get information about a cache")
   (delete! [this cache & cbs] "Delete a cache")
   (clear! [this cache & cbs] "Clear a cache"))
@@ -45,7 +45,7 @@
 
   Cache
 
-  (list [this]
+  (list [this & cbs]
     (http :get "caches"))
 
   (info [this cache & cbs]
@@ -128,16 +128,6 @@
   (let [opts (validate-options (deep-merge DEFAULTS (options-from-env) config))
         http (make-requester opts)]
     (->Client http opts)))
-
-
-;(defmacro with-client
-;  "Allows you to call Iron Cache functions with a specific client.
-;  You can pass a client instance or a configuration map that will instantiate a client"
-;  [x & body]
-;  `(let [client# (if (map? ~x)
-;                   (new-client ~x)
-;                   @~x)]
-;    (-> client# ~@body)))
 
 
 ;;; Utility functions ;;;

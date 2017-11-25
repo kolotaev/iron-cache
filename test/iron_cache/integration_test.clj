@@ -34,21 +34,6 @@
 
 ;; Tests ;;
 
-;(deftest with-client-macro
-;  (testing "with-client macro, given a client instance, performs correct requests"
-;    (with-fake-routes list-200
-;      (ic/with-client client
-;        (is (= 200 (-> ic/list :status)))
-;        (is (= "a" (-> ic/list :msg first :name))))))
-;
-;  (testing "with-client macro, given a client instance, performs correct requests"
-;    (with-fake-routes list-200
-;      (ic/with-client {:project "amiga" :token "my-token"}
-;        (is (= 200 (-> ic/list :status)))
-;        (is (= "a" (-> ic/list :msg first :name))))))
-;  )
-
-
 (deftest request-sanity
   (testing "Iron-cache client has only :status and :msg fields"
     (with-fake-routes list-200
@@ -79,6 +64,40 @@
         (is (contains? headers :accept))
         (is (= "application/json" (:accept headers))))))
   )
+
+
+(deftest with-client-macro
+  (testing "with-client macro, given a client instance, performs correct requests"
+    (with-fake-routes list-200
+      (is (= {}       (ic/with-client client
+                        (ic/info "acme")
+                        ))))
+)
+
+  (testing "with-client macro, given a client instance, performs correct requests"
+    (with-fake-routes list-200
+      (let [items (atom [])
+            _ (ic/with-client client
+                     (swap! items conj (-> ic/list))
+                     (swap! items conj (-> ic/list)))]
+        (is (= {} @items)))
+      ))
+
+  (testing "with-client macro, given a client instance, uses a client's token"
+    (with-fake-routes echo
+      (ic/with-client client
+        (is (= "abcd-asdf-qwer8" (-> ic/list :msg :original-request :headers :OAuth))))))
+
+  (testing "with-client macro, given a config, performs correct requests"
+    (with-fake-routes list-200
+      (ic/with-client {:project "amiga" :token "my-token"}
+        (is (= 2099990 (-> ic/list :status)))
+        (is (= "a" (-> ic/list :msg first :name))))))
+
+  (testing "with-client macro, given a config, uses a config's token"
+    (with-fake-routes echo
+      (ic/with-client client
+        (is (= "my-token" (-> ic/list :msg :original-request :headers :OAuth)))))))
 
 
 (deftest cache-list
