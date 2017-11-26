@@ -25,18 +25,18 @@
 
 (defprotocol Cache
   "Iron cache instance manipulation"
-  (list [this] "Get a list off all caches")
-  (info [this cache & cbs] "Get information about a cache")
-  (delete! [this cache & cbs] "Delete a cache")
-  (clear! [this cache & cbs] "Clear a cache"))
+  (list [this] [this cbs] "Get a list off all caches")
+  (info [this cache] [this cache cbs] "Get information about a cache")
+  (delete! [this cache] [this cache cbs] "Delete a cache")
+  (clear! [this cache] [this cache cbs] "Clear a cache"))
 
 
 (defprotocol Key
   "Iron cache instance keys manipulation"
-  (get [this cache key & cbs] "Get a value stored in a key from a cache")
-  (put [this cache key val & cbs] "Add key/value pair to a cache")
-  (incr [this cache key val & cbs] "Increment value in a cache stored at key by a specified amount")
-  (del [this cache key & cbs] "Delete a value from a cache stored at key"))
+  (get [this cache key] [this cache key cbs] "Get a value stored in a key from a cache")
+  (put [this cache key val] [this cache key val cbs] "Add key/value pair to a cache")
+  (incr [this cache key val] [this cache key val cbs] "Increment value in a cache stored at key by a specified amount")
+  (del [this cache key] [this cache key cbs] "Delete a value from a cache stored at key"))
 
 
 ;;; Clent record ;;;
@@ -45,32 +45,48 @@
 
   Cache
 
-  (list
-    [this]
-    (http :get "caches"))
+  (list [this]
+    (list this nil))
+  (list [this cbs]
+    (http :get "caches" cbs))
 
-  (info [this cache & cbs]
-    (http :get (format "caches/%s" cache)))
+  (info [this cache]
+    (info this cache nil))
+  (info [this cache cbs]
+    (http :get (format "caches/%s" cache) cbs))
 
-  (delete! [this cache & cbs]
-    (http :delete (format "caches/%s" cache)))
+  (delete! [this cache]
+    (delete! this cache nil))
+  (delete! [this cache cbs]
+    (http :delete (format "caches/%s" cache) cbs))
 
-  (clear! [this cache & cbs]
-    (http :post (format "caches/%s/clear" cache)))
+  (clear! [this cache]
+    (clear! this cache nil))
+  (clear! [this cache cbs]
+    (http :post (format "caches/%s/clear" cache) cbs))
 
   Key
 
-  (get [this cache key & cbs]
-    (http :get (format "caches/%s/items/%s" cache key)))
+  (get [this cache key]
+    (get this cache key nil))
+  (get [this cache key cbs]
+    (http :get (format "caches/%s/items/%s" cache key) cbs))
 
-  (put [this cache key val & cbs]
-    (http :put (format "caches/%s/items/%s" cache key) val))
+  (put [this cache key val]
+    (put this cache key val nil))
+  (put [this cache key val cbs]
+    (http :put (format "caches/%s/items/%s" cache key) val cbs))
 
-  (incr [this cache key val & cbs]
-    (http :post (format "caches/%s/items/%s" cache key) {:amount val}))
+  (incr [this cache key val]
+    (incr this cache key val nil))
+  (incr [this cache key val cbs]
+    (http :post (format "caches/%s/items/%s" cache key) {:amount val} cbs))
 
-  (del [this cache key & cbs]
-    (http :delete (format "caches/%s/items/%s" cache key))))
+  (del [this cache key]
+    (del this cache key nil))
+  (del [this cache key cbs]
+    (http :delete (format "caches/%s/items/%s" cache key cbs)))
+  )
 
 
 ;;; Main functionality ;;;

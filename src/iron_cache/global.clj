@@ -12,8 +12,8 @@
 
 (defn list
   "Get a list off all caches using global client"
-  []
-  (core/list *client*))
+  ([] (core/list *client*))
+  ([cbs] (core/list *client* cbs)))
 
 ;(defn info
 ;  "Get information about a cache using global client"
