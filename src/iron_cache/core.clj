@@ -1,8 +1,7 @@
 (ns iron-cache.core
   (:refer-clojure :exclude [get list])
+  (:use iron-cache.util)
   (:require [clj-http.client :as http-client]))
-
-(declare deep-merge env)
 
 
 ;;; Configuration defaults ;;;
@@ -53,40 +52,39 @@
   (info [this cache]
     (info this cache nil))
   (info [this cache cbs]
-    (http :get (format "caches/%s" cache) cbs))
+    (http :get (format-str "caches/%s" cache) cbs))
 
   (delete! [this cache]
     (delete! this cache nil))
   (delete! [this cache cbs]
-    (http :delete (format "caches/%s" cache) cbs))
+    (http :delete (format-str "caches/%s" cache) cbs))
 
   (clear! [this cache]
     (clear! this cache nil))
   (clear! [this cache cbs]
-    (http :post (format "caches/%s/clear" cache) cbs))
+    (http :post (format-str "caches/%s/clear" cache) cbs))
 
   Key
 
   (get [this cache key]
     (get this cache key nil))
   (get [this cache key cbs]
-    (http :get (format "caches/%s/items/%s" cache key) cbs))
+    (http :get (format-str "caches/%s/items/%s" cache key) cbs))
 
   (put [this cache key val]
     (put this cache key val nil))
   (put [this cache key val cbs]
-    (http :put (format "caches/%s/items/%s" cache key) val cbs))
+    (http :put (format-str "caches/%s/items/%s" cache key) val cbs))
 
   (incr [this cache key val]
     (incr this cache key val nil))
   (incr [this cache key val cbs]
-    (http :post (format "caches/%s/items/%s" cache key) {:amount val} cbs))
+    (http :post (format-str "caches/%s/items/%s" cache key) {:amount val} cbs))
 
   (del [this cache key]
     (del this cache key nil))
   (del [this cache key cbs]
-    (http :delete (format "caches/%s/items/%s" cache key cbs)))
-  )
+    (http :delete (format-str "caches/%s/items/%s" cache key cbs))))
 
 
 ;;; Main functionality ;;;
@@ -128,14 +126,18 @@
                                       :accept :json}})
         make-url #(format "%s/%s/%s/%s" (:host opts) (:api_version opts) (:project opts) %)]
 
-    (fn [method uri & [payload cbs]]
-      (-> all-options
+    (fn [method uri & [payload {:keys [on-success on-fail]}]]
+      (let [async? (or (some? on-success) (some? on-fail))
+            http-call (if async?
+                        #(http-client/request % on-success on-fail)
+                        #(http-client/request %))]
+        (-> all-options
           (into {:request-method method
                  :url (make-url uri)
-                 :async? (map? (or cbs nil))
+                 :async? async?
                  :body payload})
-          http-client/request
-          process-response))))
+          http-call
+          process-response)))))
 
 
 (defn new-client
@@ -145,19 +147,3 @@
   (let [opts (validate-options (deep-merge DEFAULTS (options-from-env) config))
         http (make-requester opts)]
     (->Client http opts)))
-
-
-;;; Utility functions ;;;
-
-(defn- env
-  "System/getenv wrapper"
-  [key]
-  (System/getenv key))
-
-
-(defn- deep-merge
-  "Deeply merges maps so that nested maps are combined rather than replaced."
-  [& vs]
-  (if (every? map? vs)
-    (apply merge-with deep-merge vs)
-    (last vs)))

@@ -1,11 +1,7 @@
 (ns iron-cache.core-test
+  (:use iron-cache.util)
   (:require [clojure.test :refer :all]
             [iron-cache.core :as ic]))
-
-
-(defn- map-subset? [a b]
-  "Helper function to test if map is a subset of another map"
-  (every? (fn [[k _ :as entry]] (= entry (find b k))) a))
 
 
 (deftest new-client
@@ -35,7 +31,7 @@
 
 
 (deftest options-from-env
-  (with-redefs [ic/env (constantly "foo")]
+  (with-redefs [env (constantly "foo")]
     (testing "missing project and token are taken from env variables"
       (is (map-subset? {:project "foo" :token "foo"} (-> {} ic/new-client :config))))
 
@@ -50,7 +46,7 @@
 
 
 (deftest options-merge
-  (with-redefs [ic/env (constantly "x")]
+  (with-redefs [env (constantly "x")]
     (testing "base custom param overrides defaults"
       (is (= {:host "https://cache-aws-us-east-1.iron.io"
               :port 443

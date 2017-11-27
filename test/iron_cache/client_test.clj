@@ -15,8 +15,12 @@
 
 ;; Mock Routes ;;
 
-(def echo
+(def echo-list
   {(str valid-server-url "/amiga/caches")
+   (fn [req] {:body (-> {:original-request req} json/generate-string)})})
+
+(def echo-info
+  {(str valid-server-url "/amiga/caches/my-cache-id")
    (fn [req] {:body (-> {:original-request req} json/generate-string)})})
 
 (def list-200
@@ -41,29 +45,29 @@
         (is (= [:status :msg] (-> resp keys))))))
 
   (testing "oauth2 token was sent correctly"
-    (with-fake-routes echo
+    (with-fake-routes echo-list
       (let [headers (-> client ic/list :msg :original-request :headers)]
         (is (contains? headers :OAuth))
         (is (= "abcd-asdf-qwer" (:OAuth headers))))))
 
   (testing "content-type header is json"
-    (with-fake-routes echo
+    (with-fake-routes echo-list
       (let [headers (-> client ic/list :msg :original-request :headers)]
         (is (contains? headers :content-type))
         (is (= "application/json" (:content-type headers))))))
 
   (testing "accept header is json"
-    (with-fake-routes echo
+    (with-fake-routes echo-list
       (let [headers (-> client ic/list :msg :original-request :headers)]
         (is (contains? headers :accept))
         (is (= "application/json" (:accept headers))))))
 
-  (testing "accept header is json"
-    (with-fake-routes echo
-      (let [headers (-> client ic/list :msg :original-request :headers)]
-        (is (contains? headers :accept))
-        (is (= "application/json" (:accept headers))))))
-  )
+  (testing "cache id (string, keyword, symbol) is correctly farmatted in a request URI"
+    (with-fake-routes echo-info
+      (are [id] (= "/1/amiga/caches/my-cache-id" (-> client (ic/info id) :msg :original-request :uri))
+        "my-cache-id"
+        :my-cache-id
+        'my-cache-id))))
 
 
 (deftest cache-list
