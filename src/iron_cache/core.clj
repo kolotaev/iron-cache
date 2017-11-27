@@ -121,23 +121,23 @@
   [opts]
   (let [all-options (merge (:http-options opts)
                            {:server-port (:port opts)
-                            :headers {"OAuth" (:token opts)
+                            :headers {"OAuth" (-> opts :token name)
                                       :content-type :json
                                       :accept :json}})
-        make-url #(format "%s/%s/%s/%s" (:host opts) (:api_version opts) (:project opts) %)]
+        make-url #(format-str "%s/%s/%s/%s" (:host opts) (:api_version opts) (:project opts) %)]
 
-    (fn [method uri & [payload {:keys [on-success on-fail]}]]
-      (let [async? (or (some? on-success) (some? on-fail))
+    (fn [method uri & [payload {:keys [ok fail]}]]
+      (let [async? (or (some? ok) (some? fail))
             http-call (if async?
-                        #(http-client/request % on-success on-fail)
-                        #(http-client/request %))]
-        (-> all-options
-          (into {:request-method method
-                 :url (make-url uri)
-                 :async? async?
-                 :body payload})
-          http-call
-          process-response)))))
+                        #(http-client/request % ok fail)
+                        #(http-client/request %))
+            options (into all-options {:request-method method
+                                       :url (make-url uri)
+                                       :async? async?
+                                       :body payload})]
+        (if-not async?
+          (-> options http-call process-response)
+          (http-call options))))))
 
 
 (defn new-client

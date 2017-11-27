@@ -25,5 +25,7 @@
   "Like a regular `format`, but formats keywords to strings correctly: (:foo -> 'foo')"
   [fmt & rest]
   (->> rest
-    (map name)
+    (map #(if (instance? clojure.lang.Named %)
+            (name %)
+            %))
     (apply format fmt)))

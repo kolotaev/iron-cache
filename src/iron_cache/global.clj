@@ -15,11 +15,11 @@
   ([] (core/list *client*))
   ([cbs] (core/list *client* cbs)))
 
-;(defn info
-;  "Get information about a cache using global client"
-;  [cache & cbs]
-;  (core/info *client* cache cbs))
-;
+(defn info
+  "Get information about a cache using global client"
+  ([cache] (core/info *client* cache))
+  ([cache & cbs] (core/info *client* cache cbs)))
+
 ;(defn delete!
 ;  "Delete a cache using global client"
 ;  [cache & cbs]
