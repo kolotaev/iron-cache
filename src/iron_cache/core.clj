@@ -12,7 +12,7 @@
   {:host ROOT_URL
    :port 443
    :api_version 1
-   :callbacks-parse true ;; If you want to use not modified callbacks and manually parse response
+   :parse-callbacks true ;; If you want to use not modified callbacks and manually parse response
    :http-options {:client-params {"http.useragent" "iron_cache_clj_client"}
                   :content-type :json
                   :accept :json
@@ -107,7 +107,7 @@
   config)
 
 
-(defn process-response
+(defn- process-response
   "Processes the response from the server"
   [resp]
   (let [status (:status resp)
@@ -116,6 +116,10 @@
       (empty? resp)        {:status 0, :msg "Response is empty. Something went wrong."}
       (= (/ status 100) 2) {:status status, :msg body}
       :else                {:status status, :msg (:msg body)})))
+
+(defn- ff
+  [fn]
+  )
 
 
 (defn- make-requester
@@ -126,16 +130,16 @@
                             :headers {"OAuth" (-> opts :token name)
                                       :content-type :json
                                       :accept :json}})
-        use-cb-parse (:callbacks-parse opts)
+        parse-cbs? (:parse-callbacks opts)
         make-url #(format-str "%s/%s/%s/%s" (:host opts) (:api_version opts) (:project opts) %)]
 
     (fn [method uri & {:keys [payload] {:keys [ok fail]} :callbacks}]
       (let [async? (or (some? ok) (some? fail))
-            ok (if use-cb-parse
-                 #(do (ok (process-response %)))
+            ok (if parse-cbs?
+                 #(do (-> % process-response ok))
                  ok)
-            fail (if use-cb-parse
-                 #(do (fail (process-response %)))
+            fail (if parse-cbs?
+                   #(do (-> % process-response fail))
                   fail)
             http-call (if async?
                         #(http-client/request % ok fail)

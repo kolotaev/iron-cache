@@ -13,7 +13,7 @@
   (ic/new-client {:host "http://localhost:19980" :project "amiga" :token "abcd-asdf-qwer"}))
 
 (defonce client-no-body-parse
-  (ic/new-client {:host "http://localhost:19980" :project "amiga" :token "a" :callbacks-parse false}))
+  (ic/new-client {:host "http://localhost:19980" :project "amiga" :token "a" :parse-callbacks false}))
 
 (defn- response [file-name]
   (slurp (str "test/responses/" file-name)))
