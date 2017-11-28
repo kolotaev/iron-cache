@@ -122,7 +122,7 @@
 ;        (is (= 200 (:status resp)))
 ;        (is (= 2 (-> resp :msg count)))
 ;        (is (= "amiga" (-> resp :msg first :project_id)))
-;        (is (= "b" (-> resp :msg last :name))))))
+;        (is (= "b" (-> resp :msg last :name)))))))
 
 ;    (testing "empty list of caches"
 ;      (with-fake-routes list-200-empty

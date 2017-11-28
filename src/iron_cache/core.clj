@@ -38,7 +38,7 @@
   (del [this cache key] [this cache key cbs] "Delete a value from a cache stored at key"))
 
 
-;;; Clent record ;;;
+;;; Client record ;;;
 
 (defrecord Client [http config]
 
@@ -47,44 +47,44 @@
   (list [this]
     (list this nil))
   (list [this cbs]
-    (http :get "caches" cbs))
+    (http :get "caches" nil cbs))
 
   (info [this cache]
     (info this cache nil))
   (info [this cache cbs]
-    (http :get (format-str "caches/%s" cache) cbs))
+    (http :get (format-str "caches/%s" cache) :callbacks cbs))
 
   (delete! [this cache]
     (delete! this cache nil))
   (delete! [this cache cbs]
-    (http :delete (format-str "caches/%s" cache) cbs))
+    (http :delete (format-str "caches/%s" cache) :callbacks cbs))
 
   (clear! [this cache]
     (clear! this cache nil))
   (clear! [this cache cbs]
-    (http :post (format-str "caches/%s/clear" cache) cbs))
+    (http :post (format-str "caches/%s/clear" cache) :callbacks cbs))
 
   Key
 
   (get [this cache key]
     (get this cache key nil))
   (get [this cache key cbs]
-    (http :get (format-str "caches/%s/items/%s" cache key) cbs))
+    (http :get (format-str "caches/%s/items/%s" cache key) :callbacks cbs))
 
   (put [this cache key val]
     (put this cache key val nil))
   (put [this cache key val cbs]
-    (http :put (format-str "caches/%s/items/%s" cache key) val cbs))
+    (http :put (format-str "caches/%s/items/%s" cache key) :payload val :callbacks cbs))
 
   (incr [this cache key val]
     (incr this cache key val nil))
   (incr [this cache key val cbs]
-    (http :post (format-str "caches/%s/items/%s" cache key) {:amount val} cbs))
+    (http :post (format-str "caches/%s/items/%s" cache key) :payload {:amount val} :callbacks cbs))
 
   (del [this cache key]
     (del this cache key nil))
   (del [this cache key cbs]
-    (http :delete (format-str "caches/%s/items/%s" cache key cbs))))
+    (http :delete (format-str "caches/%s/items/%s" cache key) :callbacks cbs)))
 
 
 ;;; Main functionality ;;;
@@ -106,14 +106,15 @@
   config)
 
 
-(defn- process-response
+(defn process-response
   "Processes the response from the server"
   [resp]
   (let [status (:status resp)
         body (:body resp)]
-    (if (= (/ status 100) 2)
-      {:status status, :msg body}
-      {:status status, :msg (:msg body)})))
+    (cond
+      (empty? resp)        {:status 0, :msg "Response is empty. Something went wrong."}
+      (= (/ status 100) 2) {:status status, :msg body}
+      :else                {:status status, :msg (:msg body)})))
 
 
 (defn- make-requester
@@ -126,7 +127,7 @@
                                       :accept :json}})
         make-url #(format-str "%s/%s/%s/%s" (:host opts) (:api_version opts) (:project opts) %)]
 
-    (fn [method uri & [payload {:keys [ok fail]}]]
+    (fn [method uri & {:keys [payload] {:keys [ok fail]} :callbacks}]
       (let [async? (or (some? ok) (some? fail))
             http-call (if async?
                         #(http-client/request % ok fail)
