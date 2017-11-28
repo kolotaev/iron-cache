@@ -117,9 +117,13 @@
       (= (/ status 100) 2) {:status status, :msg body}
       :else                {:status status, :msg (:msg body)})))
 
-(defn- ff
-  [fn]
-  )
+
+(defn- wrap-in-process-response
+  "Conditionally wrap given function in response-process"
+  [process? fn]
+  (if process?
+    #(do (-> % process-response fn))
+    fn))
 
 
 (defn- make-requester
@@ -135,12 +139,8 @@
 
     (fn [method uri & {:keys [payload] {:keys [ok fail]} :callbacks}]
       (let [async? (or (some? ok) (some? fail))
-            ok (if parse-cbs?
-                 #(do (-> % process-response ok))
-                 ok)
-            fail (if parse-cbs?
-                   #(do (-> % process-response fail))
-                  fail)
+            ok (wrap-in-process-response parse-cbs? ok)
+            fail (wrap-in-process-response parse-cbs? fail)
             http-call (if async?
                         #(http-client/request % ok fail)
                         #(http-client/request %))
