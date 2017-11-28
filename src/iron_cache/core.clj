@@ -47,7 +47,7 @@
   (list [this]
     (list this nil))
   (list [this cbs]
-    (http :get "caches" nil cbs))
+    (http :get "caches" :callbacks cbs))
 
   (info [this cache]
     (info this cache nil))
