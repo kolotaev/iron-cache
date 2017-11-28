@@ -9,7 +9,11 @@
 
 (def URL "http://localhost:19980")
 
-(defonce client (ic/new-client {:host "http://localhost:19980" :project "amiga" :token "abcd-asdf-qwer"}))
+(defonce client
+  (ic/new-client {:host "http://localhost:19980" :project "amiga" :token "abcd-asdf-qwer"}))
+
+(defonce client-no-body-parse
+  (ic/new-client {:host "http://localhost:19980" :project "amiga" :token "a" :callbacks-parse false}))
 
 (defn- response [file-name]
   (slurp (str "test/responses/" file-name)))
@@ -27,13 +31,22 @@
 
 (deftest ^:integration ^:async cache-list-async
   (run-server)
-  (testing "correct list of caches"
+  (testing "correct list of caches with baked-in response body parser"
     (let [result (promise)
           _ (ic/list client {:ok #(deliver result %)
                              :fail #(deliver result %)})
           resp (deref result wait-ms :timeout)]
       (is (some? resp))
-      (is (= 200 (:body resp)))
+      (is (= 200 (:status resp)))
       (is (= 2 (-> resp :msg count)))
       (is (= "amiga" (-> resp :msg first :project_id)))
-      (is (= "b" (-> resp :msg last :name))))))
+      (is (= "b" (-> resp :msg last :name)))))
+
+  (testing "correct list of caches with custom callbacks"
+    (let [result (promise)
+          _ (ic/list client-no-body-parse {:ok #(deliver result %)
+                             :fail #(deliver result %)})
+          resp (deref result wait-ms :timeout)]
+      (is (some? resp))
+      (is (= 2 (-> resp :body count)))
+      (is (= "a" (-> resp :body first :name))))))

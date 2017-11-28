@@ -12,6 +12,7 @@
   {:host ROOT_URL
    :port 443
    :api_version 1
+   :callbacks-parse true ;; If you want to use not modified callbacks and manually parse response
    :http-options {:client-params {"http.useragent" "iron_cache_clj_client"}
                   :content-type :json
                   :accept :json
@@ -125,10 +126,17 @@
                             :headers {"OAuth" (-> opts :token name)
                                       :content-type :json
                                       :accept :json}})
+        use-cb-parse (:callbacks-parse opts)
         make-url #(format-str "%s/%s/%s/%s" (:host opts) (:api_version opts) (:project opts) %)]
 
     (fn [method uri & {:keys [payload] {:keys [ok fail]} :callbacks}]
       (let [async? (or (some? ok) (some? fail))
+            ok (if use-cb-parse
+                 #(do (ok (process-response %)))
+                 ok)
+            fail (if use-cb-parse
+                 #(do (fail (process-response %)))
+                  fail)
             http-call (if async?
                         #(http-client/request % ok fail)
                         #(http-client/request %))

@@ -51,6 +51,7 @@
       (is (= {:host "https://cache-aws-us-east-1.iron.io"
               :port 443
               :api_version 2
+              :callbacks-parse true
               :http-options {:client-params {"http.useragent" "iron_cache_clj_client"}
                              :content-type :json
                              :accept :json
@@ -65,6 +66,7 @@
       (is (= {:host "some-host"
               :port 443
               :api_version 3
+              :callbacks-parse true
               :http-options {:client-params {"http.useragent" "iron_cache_clj_client"}
                              :content-type :json
                              :accept :json
@@ -79,6 +81,7 @@
       (is (= {:host "https://cache-aws-us-east-1.iron.io"
               :port 443
               :api_version 3
+              :callbacks-parse true
               :http-options {:client-params {"foo" "bar", "http.useragent" "iron_cache_clj_client"}
                              :content-type :json
                              :accept :transit
@@ -96,6 +99,7 @@
       (is (= {:host "https://cache-aws-us-east-1.iron.io"
               :port 443
               :api_version 3
+              :callbacks-parse true
               :http-options {:client-params {"foo" "bar", "http.useragent" "clj"}
                              :content-type :json
                              :accept :transit
