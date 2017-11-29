@@ -1,0 +1,9 @@
+{
+  "cache": "users",
+  "key": "john",
+  "value": {
+    "name": "John",
+    "age": 25
+  },
+  "cas": 12345
+}

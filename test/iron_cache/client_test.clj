@@ -1,70 +1,13 @@
 (ns iron-cache.client-test
-  (:use clj-http.fake)
+  (:use [clj-http.fake]
+        [iron-cache.response-utils])
   (:require [clojure.test :refer :all]
             [iron-cache.core :as ic]
             [cheshire.core :as json]))
 
 
-(defn- response [file-name]
-  (slurp (str "test/responses/" file-name)))
-
 (defonce client (ic/new-client {:project "amiga" :token "abcd-asdf-qwer"}))
 
-(defonce valid-server-url (str @#'ic/ROOT_URL "/1"))
-
-
-;; Mock Routes ;;
-
-(def echo-list
-  {(str valid-server-url "/amiga/caches")
-   (fn [req] {:body (-> {:original-request req} json/generate-string)})})
-
-(def echo-info
-  {(str valid-server-url "/amiga/caches/my-cache-id")
-   (fn [req] {:body (-> {:original-request req} json/generate-string)})})
-
-;;; list ;;;
-(def list-200
-  {(str valid-server-url "/amiga/caches") (fn [_] {:status 200 :body (response "list-200")})})
-
-(def list-200-empty
-  {(str valid-server-url "/amiga/caches") (fn [_] {:status 200 :body "{}"})})
-
-(def list-401
-  {(str valid-server-url "/amiga/caches") (fn [_] {:status 401 :body (response "list-401")})})
-
-(def list-500
-  {(str valid-server-url "/amiga/caches") (fn [_] {:status 500 :body (response "list-500")})})
-
-;;;; info ;;;
-(def info-200
-  {(str valid-server-url "/amiga/caches/credit-cards") (fn [_] {:status 200 :body (response "info-200")})})
-
-(def info-200-empty
-  {(str valid-server-url "/amiga/caches/users") (fn [_] {:status 200 :body "[]"})})
-
-(def info-403
-  {(str valid-server-url "/amiga/caches/planes.my") (fn [_] {:status 403 :body (response "info-403")})})
-
-(def info-500
-  {(str valid-server-url "/amiga/caches/users") (fn [_] {:status 500 :body (response "info-500")})})
-
-;;;; delete! ;;;
-(def delete-cache
-  {(str valid-server-url "/amiga/caches/credit-cards") (fn [_] {:status 200 :body (response "delete-cache")})})
-
-(def delete-cache-500
-  {(str valid-server-url "/amiga/caches/users") (fn [_] {:status 500 :body (response "delete-cache-500")})})
-
-;;;; clear! ;;;
-(def clear-cache
-  {(str valid-server-url "/amiga/caches/credit-cards") (fn [_] {:status 200 :body (response "clear-cache")})})
-
-(def clear-cache-500
-  {(str valid-server-url "/amiga/caches/users") (fn [_] {:status 500 :body (response "clear-cache-500")})})
-
-
-;; Tests ;;
 
 (deftest request-sanity
   (testing "Response has only data response in case of successful response"
@@ -156,7 +99,7 @@
 
   (testing "forbidden request"
     (with-fake-routes info-403
-      (let [resp (ic/info client "planes.my")]
+      (let [resp (ic/info client :planes.my)]
         (is (= 403 (:status resp)))
         (is (= "Project suspected, resource limits" (:msg resp))))))
 
@@ -190,6 +133,42 @@
 
   (testing "server went down"
     (with-fake-routes clear-cache-500
-      (let [resp (ic/info client "users")]
+      (let [resp (ic/info client :users)]
+        (is (= 500 (:status resp)))
+        (is (= "Iron Server went down" (:msg resp)))))))
+
+
+(deftest key-get
+  (testing "correct key retrieve"
+    (with-fake-routes get-key-200
+      (let [resp (ic/get client "users" :john)]
+        (is (map? resp))
+        (is (= "john" (-> resp :key)))
+        (is (= 25 (-> resp :value :age)))
+        (is (= 12345 (-> resp :cas))))))
+
+  (testing "key not found"
+    (with-fake-routes get-key-404
+      (let [resp (ic/get client "users" "alice")]
+        (is (= 404 (:status resp)))
+        (is (= "Key was not found" (:msg resp))))))
+
+  (testing "server went down"
+    (with-fake-routes get-key-500
+      (let [resp (ic/get client :users "john")]
+        (is (= 500 (:status resp)))
+        (is (= "Iron Server went down" (:msg resp)))))))
+
+
+(deftest key-del
+  (testing "key was deleted successfully"
+    (with-fake-routes delete-key
+      (let [resp (ic/get client :credit-cards 1234)]
+        (is (map? resp))
+        (is (= "Deleted" (:msg resp))))))
+
+  (testing "server went down"
+    (with-fake-routes delete-key-500
+      (let [resp (ic/get client :users "john")]
         (is (= 500 (:status resp)))
         (is (= "Iron Server went down" (:msg resp)))))))
