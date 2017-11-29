@@ -37,10 +37,9 @@
                              :fail #(deliver result %)})
           resp (deref result wait-ms :timeout)]
       (is (some? resp))
-      (is (= 200 (:status resp)))
-      (is (= 2 (-> resp :msg count)))
-      (is (= "amiga" (-> resp :msg first :project_id)))
-      (is (= "b" (-> resp :msg last :name)))))
+      (is (= 2 (count resp)))
+      (is (= "amiga" (-> resp first :project_id)))
+      (is (= "b" (-> resp last :name)))))
 
   (testing "correct list of caches with custom callbacks"
     (let [result (promise)

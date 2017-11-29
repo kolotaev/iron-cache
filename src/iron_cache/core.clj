@@ -111,10 +111,11 @@
   "Processes the response from the server"
   [resp]
   (let [status (:status resp)
+        success-status? (= (/ status 100) 2)
         body (:body resp)]
     (cond
       (empty? resp)        {:status 0, :msg "Response is empty. Something went wrong."}
-      (= (/ status 100) 2) {:status status, :msg body}
+      success-status?      body
       :else                {:status status, :msg (:msg body)})))
 
 
