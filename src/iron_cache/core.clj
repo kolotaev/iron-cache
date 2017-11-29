@@ -25,10 +25,10 @@
 
 (defprotocol Cache
   "Iron cache instance manipulation"
-  (list [this] [this cbs] "Get a list off all caches")
-  (info [this cache] [this cache cbs] "Get information about a cache")
-  (delete! [this cache] [this cache cbs] "Delete a cache")
-  (clear! [this cache] [this cache cbs] "Clear a cache"))
+  (list [this] [this cbs] "Get a list of all caches in a project")
+  (info [this cache] [this cache cbs] "Get general information about a cache")
+  (delete! [this cache] [this cache cbs] "Delete a cache and all items in it")
+  (clear! [this cache] [this cache cbs] "Delete all items in a cache. This cannot be undone"))
 
 
 (defprotocol Key

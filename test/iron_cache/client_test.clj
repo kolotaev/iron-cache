@@ -49,6 +49,20 @@
 (def info-500
   {(str valid-server-url "/amiga/caches/users") (fn [_] {:status 500 :body (response "info-500")})})
 
+;;;; delete! ;;;
+(def delete-cache
+  {(str valid-server-url "/amiga/caches/credit-cards") (fn [_] {:status 200 :body (response "delete-cache")})})
+
+(def delete-cache-500
+  {(str valid-server-url "/amiga/caches/users") (fn [_] {:status 500 :body (response "delete-cache-500")})})
+
+;;;; clear! ;;;
+(def clear-cache
+  {(str valid-server-url "/amiga/caches/credit-cards") (fn [_] {:status 200 :body (response "clear-cache")})})
+
+(def clear-cache-500
+  {(str valid-server-url "/amiga/caches/users") (fn [_] {:status 500 :body (response "clear-cache-500")})})
+
 
 ;; Tests ;;
 
@@ -135,7 +149,7 @@
         (is (map? resp))
         (is (= 80000 (:size resp))))))
 
-  (testing "empty info bout a cache"
+  (testing "empty info about a cache"
     (with-fake-routes info-200-empty
       (let [resp (ic/info client "users")]
         (is (= nil (:size resp))))))
@@ -148,6 +162,34 @@
 
   (testing "server went down"
     (with-fake-routes info-500
+      (let [resp (ic/info client "users")]
+        (is (= 500 (:status resp)))
+        (is (= "Iron Server went down" (:msg resp)))))))
+
+
+(deftest cache-delete!
+  (testing "correct deletion of a cache"
+    (with-fake-routes delete-cache
+      (let [resp (ic/info client "credit-cards")]
+        (is (map? resp))
+        (is (= "Deleted" (:msg resp))))))
+
+  (testing "server went down"
+    (with-fake-routes delete-cache-500
+      (let [resp (ic/info client "users")]
+        (is (= 500 (:status resp)))
+        (is (= "Iron Server went down" (:msg resp)))))))
+
+
+(deftest cache-clear!
+  (testing "correct clear of a cache"
+    (with-fake-routes clear-cache
+      (let [resp (ic/info client "credit-cards")]
+        (is (map? resp))
+        (is (= "Cleared." (:msg resp))))))
+
+  (testing "server went down"
+    (with-fake-routes clear-cache-500
       (let [resp (ic/info client "users")]
         (is (= 500 (:status resp)))
         (is (= "Iron Server went down" (:msg resp)))))))
