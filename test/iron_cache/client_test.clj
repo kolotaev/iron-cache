@@ -2,8 +2,7 @@
   (:use [clj-http.fake]
         [iron-cache.response-utils])
   (:require [clojure.test :refer :all]
-            [iron-cache.core :as ic]
-            [cheshire.core :as json]))
+            [iron-cache.core :as ic]))
 
 
 (defonce client (ic/new-client {:project "amiga" :token "abcd-asdf-qwer"}))
@@ -19,7 +18,7 @@
   (testing "Response has only :status and :msg fields in case of invalid response"
     (with-fake-routes list-401
       (let [resp (ic/list client)]
-        (is (= [:status :msg] (-> resp keys))))))
+        (is (= [:msg :status] (-> resp keys))))))
 
   (testing "oauth2 token was sent correctly"
     (with-fake-routes echo-list
@@ -113,13 +112,13 @@
 (deftest cache-delete!
   (testing "correct deletion of a cache"
     (with-fake-routes delete-cache
-      (let [resp (ic/info client "credit-cards")]
+      (let [resp (ic/delete! client "credit-cards")]
         (is (map? resp))
         (is (= "Deleted" (:msg resp))))))
 
   (testing "server went down"
     (with-fake-routes delete-cache-500
-      (let [resp (ic/info client "users")]
+      (let [resp (ic/delete! client "users")]
         (is (= 500 (:status resp)))
         (is (= "Iron Server went down" (:msg resp)))))))
 
@@ -127,13 +126,13 @@
 (deftest cache-clear!
   (testing "correct clear of a cache"
     (with-fake-routes clear-cache
-      (let [resp (ic/info client "credit-cards")]
+      (let [resp (ic/clear! client "credit-cards")]
         (is (map? resp))
         (is (= "Cleared." (:msg resp))))))
 
   (testing "server went down"
     (with-fake-routes clear-cache-500
-      (let [resp (ic/info client :users)]
+      (let [resp (ic/clear! client :users)]
         (is (= 500 (:status resp)))
         (is (= "Iron Server went down" (:msg resp)))))))
 
@@ -160,15 +159,64 @@
         (is (= "Iron Server went down" (:msg resp)))))))
 
 
+(deftest key-incr
+  (testing "key was incremented successfully given positive amount"
+    (with-fake-routes incr-key-201
+      (let [resp (ic/incr client :credit-cards :1234 10)]
+        (is (map? resp))
+        (is (= "Added" (:msg resp)))
+        (is (= 110 (:value resp))))))
+
+  (testing "key was incremented successfully given negative amount"
+    (with-fake-routes incr-key-201
+      (let [resp (ic/incr client :credit-cards :1234 -10)]
+        (is (map? resp))
+        (is (= "Added" (:msg resp)))
+        (is (= 90 (:value resp))))))
+
+  (testing "key was incremented successfully given float amount"
+    (with-fake-routes incr-key-201
+      (let [resp (ic/incr client :credit-cards :1234 10.5)]
+        (is (map? resp))
+        (is (= "Added" (:msg resp)))
+        (is (= 110.5 (:value resp))))))
+
+  (testing "server went down"
+    (with-fake-routes incr-key-500
+      (let [resp (ic/incr client :users "john" 140)]
+        (is (= 500 (:status resp)))
+        (is (= "Iron Server went down" (:msg resp)))))))
+
+
+(deftest key-put
+  (testing "simlpe value was put sucessfully"
+    (with-fake-routes put-key-201-minimal
+      (let [resp (ic/put client :credit-cards :1234 {:value 85})]
+        (is (map? resp))
+        (is (= "Stored." (:msg resp))))))
+
+  (testing "compound value was put sucessfully"
+    (with-fake-routes put-key-201-minimal
+      (let [resp (ic/put client :credit-cards :1234 {:value 85, "expires_in" 456, :replace true})]
+        (is (map? resp))
+        (is (= "Stored." (:msg resp))))))
+
+  (testing "server went down"
+    (with-fake-routes put-key-500
+      (let [resp (ic/put client :users "john" {:value "aaa"})]
+        (is (= 500 (:status resp)))
+        (is (= "Iron Server went down" (:msg resp)))))))
+
+
 (deftest key-del
   (testing "key was deleted successfully"
     (with-fake-routes delete-key
-      (let [resp (ic/get client :credit-cards 1234)]
+      (let [resp (ic/del client :credit-cards 1234)]
         (is (map? resp))
         (is (= "Deleted" (:msg resp))))))
 
   (testing "server went down"
     (with-fake-routes delete-key-500
-      (let [resp (ic/get client :users "john")]
+      (let [resp (ic/del client :users "john")]
         (is (= 500 (:status resp)))
         (is (= "Iron Server went down" (:msg resp)))))))

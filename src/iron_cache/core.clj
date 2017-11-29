@@ -34,8 +34,8 @@
 (defprotocol Key
   "Iron cache instance keys manipulation"
   (get [this cache key] [this cache key cbs] "Get a value stored in a key from a cache")
-  (put [this cache key val] [this cache key val cbs] "Add key/value pair to a cache")
-  (incr [this cache key val] [this cache key val cbs] "Increment value in a cache stored at key by a specified amount")
+  (put [this cache key data] [this cache key data cbs] "Put an item with specific data into a cache")
+  (incr [this cache key val] [this cache key val cbs] "Increments the numeric value of an item in a cache")
   (del [this cache key] [this cache key cbs] "Delete a value from a cache stored at key"))
 
 
@@ -72,15 +72,15 @@
   (get [this cache key cbs]
     (http :get (format-str "caches/%s/items/%s" cache key) :callbacks cbs))
 
-  (put [this cache key val]
-    (put this cache key val nil))
-  (put [this cache key val cbs]
-    (http :put (format-str "caches/%s/items/%s" cache key) :payload val :callbacks cbs))
+  (put [this cache key data]
+    (put this cache key data nil))
+  (put [this cache key data cbs]
+    (http :put (format-str "caches/%s/items/%s" cache key) :payload data :callbacks cbs))
 
   (incr [this cache key val]
     (incr this cache key val nil))
   (incr [this cache key val cbs]
-    (http :post (format-str "caches/%s/items/%s" cache key) :payload {:amount val} :callbacks cbs))
+    (http :post (format-str "caches/%s/items/%s/increment" cache key) :payload {:amount val} :callbacks cbs))
 
   (del [this cache key]
     (del this cache key nil))
@@ -111,12 +111,12 @@
   "Processes the response from the server"
   [resp]
   (let [status (:status resp)
-        success-status? (= (/ status 100) 2)
+        success-status? (= (quot status 100) 2)
         body (:body resp)]
     (cond
       (empty? resp)        {:status 0, :msg "Response is empty. Something went wrong."}
       success-status?      body
-      :else                {:status status, :msg (:msg body)})))
+      :else                (assoc body :status status))))
 
 
 (defn- wrap-in-process-response
@@ -137,7 +137,6 @@
                                       :accept :json}})
         parse-cbs? (:parse-callbacks opts)
         make-url #(format-str "%s/%s/%s/%s" (:host opts) (:api_version opts) (:project opts) %)]
-
     (fn [method uri & {:keys [payload] {:keys [ok fail]} :callbacks}]
       (let [async? (or (some? ok) (some? fail))
             ok (wrap-in-process-response parse-cbs? ok)
