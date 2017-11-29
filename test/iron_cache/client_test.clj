@@ -28,7 +28,7 @@
   {(str valid-server-url "/amiga/caches") (fn [_] {:status 200 :body (response "list-200")})})
 
 (def list-200-empty
-  {(str valid-server-url "/amiga/caches") (fn [_] {:status 200 :body "[]"})})
+  {(str valid-server-url "/amiga/caches") (fn [_] {:status 200 :body "{}"})})
 
 (def list-401
   {(str valid-server-url "/amiga/caches") (fn [_] {:status 401 :body (response "list-401")})})
@@ -37,17 +37,17 @@
   {(str valid-server-url "/amiga/caches") (fn [_] {:status 500 :body (response "list-500")})})
 
 ;;;; info ;;;
-;(def info-200
-;  {(str valid-server-url "/amiga/caches/credit-cards") (fn [_] {:status 200 :body (response "info-200")})})
-;
-;(def info-200-empty
-;  {(str valid-server-url "/amiga/caches/users") (fn [_] {:status 200 :body "[]"})})
-;
-;(def info-403
-;  {(str valid-server-url "/amiga/caches/planes.my") (fn [_] {:status 403 :body (response "info-403")})})
-;
-;(def info-500
-;  {(str valid-server-url "/amiga/caches/users") (fn [_] {:status 500 :body (response "info-500")})})
+(def info-200
+  {(str valid-server-url "/amiga/caches/credit-cards") (fn [_] {:status 200 :body (response "info-200")})})
+
+(def info-200-empty
+  {(str valid-server-url "/amiga/caches/users") (fn [_] {:status 200 :body "[]"})})
+
+(def info-403
+  {(str valid-server-url "/amiga/caches/planes.my") (fn [_] {:status 403 :body (response "info-403")})})
+
+(def info-500
+  {(str valid-server-url "/amiga/caches/users") (fn [_] {:status 500 :body (response "info-500")})})
 
 
 ;; Tests ;;
@@ -128,29 +128,26 @@
         (is (= "Iron Server went down" (:msg resp)))))))
 
 
-;(deftest cache-info
-;  (testing "correct info of about a cache"
-;    (with-fake-routes list-200
-;      (let [resp (ic/list client)]
-;        (is (seq? resp))
-;        (is (= 2 (count resp)))
-;        (is (= "amiga" (-> resp first :project_id)))
-;        (is (= "b" (-> resp last :name))))))
-;
-;  (testing "empty list of caches"
-;    (with-fake-routes list-200-empty
-;      (let [resp (ic/list client)]
-;        (is (= 0 (count resp)))
-;        (is (= nil (-> resp first :project_id))))))
-;
-;  (testing "non-authorized request"
-;    (with-fake-routes list-401
-;      (let [resp (ic/list client)]
-;        (is (= 401 (:status resp)))
-;        (is (= "You must be authorized" (:msg resp))))))
-;
-;  (testing "server went down"
-;    (with-fake-routes list-500
-;      (let [resp (ic/list client)]
-;        (is (= 500 (:status resp)))
-;        (is (= "Iron Server went down" (:msg resp)))))))
+(deftest cache-info
+  (testing "correct info of about a cache"
+    (with-fake-routes info-200
+      (let [resp (ic/info client "credit-cards")]
+        (is (map? resp))
+        (is (= 80000 (:size resp))))))
+
+  (testing "empty info bout a cache"
+    (with-fake-routes info-200-empty
+      (let [resp (ic/info client "users")]
+        (is (= nil (:size resp))))))
+
+  (testing "forbidden request"
+    (with-fake-routes info-403
+      (let [resp (ic/info client "planes.my")]
+        (is (= 403 (:status resp)))
+        (is (= "Project suspected, resource limits" (:msg resp))))))
+
+  (testing "server went down"
+    (with-fake-routes info-500
+      (let [resp (ic/info client "users")]
+        (is (= 500 (:status resp)))
+        (is (= "Iron Server went down" (:msg resp)))))))
