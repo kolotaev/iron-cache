@@ -52,7 +52,7 @@
               :port 443
               :api_version 2
               :parse-callbacks true
-              :http-options {:client-params {"http.useragent" "iron_cache_clj_client"}
+              :http-options {:client-params {"http.useragent" "iron_cache_client_clojure"}
                              :content-type :json
                              :accept :json
                              :as :json
@@ -67,7 +67,7 @@
               :port 443
               :api_version 3
               :parse-callbacks true
-              :http-options {:client-params {"http.useragent" "iron_cache_clj_client"}
+              :http-options {:client-params {"http.useragent" "iron_cache_client_clojure"}
                              :content-type :json
                              :accept :json
                              :as :json
@@ -82,7 +82,7 @@
               :port 443
               :api_version 3
               :parse-callbacks true
-              :http-options {:client-params {"foo" "bar", "http.useragent" "iron_cache_clj_client"}
+              :http-options {:client-params {"foo" "bar", "http.useragent" "iron_cache_client_clojure"}
                              :content-type :json
                              :accept :transit
                              :as :json

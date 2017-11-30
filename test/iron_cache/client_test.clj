@@ -38,14 +38,14 @@
         (is (contains? headers :accept))
         (is (= "application/json" (:accept headers))))))
 
-  (testing "cache id (string, keyword, symbol) is correctly farmatted in a request URI"
+  (testing "cache id (string, keyword, symbol) is correctly formatted in a request URI"
     (with-fake-routes echo-info
       (are [id] (= "/1/amiga/caches/my-cache-id" (-> client (ic/info id) :original-request :uri))
         "my-cache-id"
         :my-cache-id
         'my-cache-id)))
 
-  (testing "project id (string, keyword, symbol) is correctly farmatted in a request URI"
+  (testing "project id (string, keyword, symbol) is correctly formatted in a request URI"
     (with-fake-routes echo-list
       (are [project-id](= "/1/amiga/caches" (-> {:project project-id :token "abc"}
                                                 ic/new-client
@@ -165,21 +165,7 @@
       (let [resp (ic/incr client :credit-cards :1234 10)]
         (is (map? resp))
         (is (= "Added" (:msg resp)))
-        (is (= 110 (:value resp))))))
-
-  (testing "key was incremented successfully given negative amount"
-    (with-fake-routes incr-key-201
-      (let [resp (ic/incr client :credit-cards :1234 -10)]
-        (is (map? resp))
-        (is (= "Added" (:msg resp)))
-        (is (= 90 (:value resp))))))
-
-  (testing "key was incremented successfully given float amount"
-    (with-fake-routes incr-key-201
-      (let [resp (ic/incr client :credit-cards :1234 10.5)]
-        (is (map? resp))
-        (is (= "Added" (:msg resp)))
-        (is (= 110.5 (:value resp))))))
+        (is (= 100 (:value resp))))))
 
   (testing "server went down"
     (with-fake-routes incr-key-500
@@ -191,12 +177,12 @@
 (deftest key-put
   (testing "simlpe value was put sucessfully"
     (with-fake-routes put-key-201-minimal
-      (let [resp (ic/put client :credit-cards :1234 {:value 85})]
+      (let [resp (ic/put client :credit-cards 1234 {:value 85})]
         (is (map? resp))
         (is (= "Stored." (:msg resp))))))
 
   (testing "compound value was put sucessfully"
-    (with-fake-routes put-key-201-minimal
+    (with-fake-routes put-key-201-additional
       (let [resp (ic/put client :credit-cards :1234 {:value 85, "expires_in" 456, :replace true})]
         (is (map? resp))
         (is (= "Stored." (:msg resp))))))

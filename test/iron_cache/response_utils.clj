@@ -1,23 +1,31 @@
 (ns iron-cache.response-utils
   (:require [iron-cache.core :as ic]
-            [cheshire.core :as json]))
+            [cheshire.core :as json]
+            [clojure.walk :as walk]))
 
 
 (defonce valid-server-url (str @#'ic/ROOT_URL "/1"))
 
-(defn- response [file-name]
+(defn response [file-name]
   "Read response from a file"
   (slurp (str "test/responses/" file-name)))
+
+(defn is->map [is]
+  "Input Stream to map witk all keywordized keys converter."
+  (-> is
+    slurp
+    json/parse-string
+    walk/keywordize-keys))
 
 ;; Mock Routes ;;
 
 (def echo-list
   {(str valid-server-url "/amiga/caches")
-   (fn [req] {:body (-> {:original-request req} json/generate-string)})})
+   (fn [req] {:body (-> {:original-request (assoc req :body (-> req :body is->map))} json/generate-string)})})
 
 (def echo-info
   {(str valid-server-url "/amiga/caches/my-cache-id")
-   (fn [req] {:body (-> {:original-request req} json/generate-string)})})
+   (fn [req] {:body (-> {:original-request (assoc req :body (-> req :body is->map))} json/generate-string)})})
 
 
 ;;; list ;;;
@@ -85,13 +93,7 @@
 ;;;; incr ;;;
 (def incr-key-201
   {(str valid-server-url "/amiga/caches/credit-cards/items/1234/increment")
-   (fn [req] {:status 201 :body (->>
-                                  req
-                                  :body
-                                  :amount
-                                  (+ 100)
-                                  (assoc {"msg" "Added"} "value")
-                                  json/generate-string)})})
+   (fn [_] {:status 201 :body (response "incr-key-201")})})
 
 (def incr-key-500
   {(str valid-server-url "/amiga/caches/users/items/john/increment")
@@ -102,24 +104,24 @@
 (def put-key-201-minimal
   {(str valid-server-url "/amiga/caches/credit-cards/items/1234")
    (fn [req]
-     (let [body (:body req)]
+     (let [body (-> req :body is->map)]
        (if (and
              (map? body)
              (some? (:value body)))
          {:status 201 :body (response "put-key-201")}
-         {:status 201 :body (response "general-400")})))})
+         {:status 400 :body (response "general-400")})))})
 
 (def put-key-201-additional
   {(str valid-server-url "/amiga/caches/credit-cards/items/1234")
    (fn [req]
-     (let [body (:body req)]
+     (let [body (-> req :body is->map)]
        (if (and
              (map? body)
              (some? (:value body))
-             (some? (:expiers-in body))
+             (some? (:expires_in body))
              (some? (:replace body)))
          {:status 201 :body (response "put-key-201")}
-         {:status 201 :body (response "general-400")})))})
+         {:status 400 :body (response "general-400")})))})
 
 (def put-key-500
   {(str valid-server-url "/amiga/caches/users/items/john")

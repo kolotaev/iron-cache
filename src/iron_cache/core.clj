@@ -1,7 +1,8 @@
 (ns iron-cache.core
   (:refer-clojure :exclude [get list])
   (:use iron-cache.util)
-  (:require [clj-http.client :as http-client]))
+  (:require [clj-http.client :as http-client]
+            [cheshire.core :as json]))
 
 
 ;;; Configuration defaults ;;;
@@ -13,7 +14,7 @@
    :port 443
    :api_version 1
    :parse-callbacks true ;; If you want to use not modified callbacks and manually parse response
-   :http-options {:client-params {"http.useragent" "iron_cache_clj_client"}
+   :http-options {:client-params {"http.useragent" "iron_cache_client_clojure"}
                   :content-type :json
                   :accept :json
                   :as :json
@@ -128,7 +129,7 @@
 
 
 (defn- make-requester
-  "Get a prepared clj http-client to make requests to a server."
+  "Get a prepared clj-http client to make requests to a server."
   [opts]
   (let [all-options (merge (:http-options opts)
                            {:server-port (:port opts)
@@ -139,15 +140,16 @@
         make-url #(format-str "%s/%s/%s/%s" (:host opts) (:api_version opts) (:project opts) %)]
     (fn [method uri & {:keys [payload] {:keys [ok fail]} :callbacks}]
       (let [async? (or (some? ok) (some? fail))
-            ok (wrap-in-process-response parse-cbs? ok)
-            fail (wrap-in-process-response parse-cbs? fail)
             http-call (if async?
-                        #(http-client/request % ok fail)
+                        #(http-client/request
+                           %
+                           (wrap-in-process-response parse-cbs? ok)
+                           (wrap-in-process-response parse-cbs? fail))
                         #(http-client/request %))
             options (into all-options {:request-method method
                                        :url (make-url uri)
                                        :async? async?
-                                       :body payload})]
+                                       :body (json/generate-string payload)})]
         (if-not async?
           (-> options http-call process-response)
           (http-call options))))))
