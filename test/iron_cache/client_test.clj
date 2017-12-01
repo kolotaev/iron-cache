@@ -47,10 +47,10 @@
 
   (testing "project id (string, keyword, symbol) is correctly formatted in a request URI"
     (with-fake-routes echo-list
-      (are [project-id](= "/1/amiga/caches" (-> {:project project-id :token "abc"}
-                                                ic/new-client
-                                                ic/list
-                                                :original-request :uri))
+      (are [project-id] (= "/1/amiga/caches" (-> {:project project-id :token "abc"}
+                                                 ic/new-client
+                                                 ic/list
+                                                 :original-request :uri))
         "amiga"
         :amiga
         'amiga))))

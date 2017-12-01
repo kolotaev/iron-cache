@@ -6,16 +6,18 @@
 
 (defonce valid-server-url (str @#'ic/ROOT_URL "/1"))
 
-(defn response [file-name]
+(defn response
   "Read response from a file"
-  (slurp (str "test/responses/" file-name)))
+  [file-name]
+  (slurp (str "resources/responses/" file-name)))
 
-(defn is->map [is]
+(defn is->map
   "Input Stream to map witk all keywordized keys converter."
+  [is]
   (-> is
-    slurp
-    json/parse-string
-    walk/keywordize-keys))
+      slurp
+      json/parse-string
+      walk/keywordize-keys))
 
 ;; Mock Routes ;;
 
@@ -106,8 +108,8 @@
    (fn [req]
      (let [body (-> req :body is->map)]
        (if (and
-             (map? body)
-             (some? (:value body)))
+            (map? body)
+            (some? (:value body)))
          {:status 201 :body (response "put-key-201")}
          {:status 400 :body (response "general-400")})))})
 
@@ -116,10 +118,10 @@
    (fn [req]
      (let [body (-> req :body is->map)]
        (if (and
-             (map? body)
-             (some? (:value body))
-             (some? (:expires_in body))
-             (some? (:replace body)))
+            (map? body)
+            (some? (:value body))
+            (some? (:expires_in body))
+            (some? (:replace body)))
          {:status 201 :body (response "put-key-201")}
          {:status 400 :body (response "general-400")})))})
 

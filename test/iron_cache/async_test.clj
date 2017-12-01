@@ -39,33 +39,33 @@
     [:post "/1/amiga/caches/drinks/items/vodka-amount/increment"]
     {:status 200
      :body (->>
-             req
-             :body
-             r/is->map
-             :amount
-             (+ 100)
-             (assoc {"msg" "Added"} "value")
-             json/generate-string)}
+            req
+            :body
+            r/is->map
+            :amount
+            (+ 100)
+            (assoc {"msg" "Added"} "value")
+            json/generate-string)}
 
     [:put "/1/amiga/caches/credit-cards/items/basic"]
     {:status 200
      :body (let [body (-> req :body r/is->map)]
              (if (and
-                   (map? body)
-                   (some? (:value body)))
+                  (map? body)
+                  (some? (:value body)))
                (r/response "put-key-201")
                (r/response "general-400")))}
 
     [:put "/1/amiga/caches/credit-cards/items/additional"]
     {:status 200
      :body (let [body (-> req :body r/is->map)]
-            (if (and
+             (if (and
                   (map? body)
                   (some? (:value body))
                   (some? (:expires_in body))
                   (some? (:replace body)))
-              (r/response "put-key-201")
-              (r/response "general-400")))}))
+               (r/response "put-key-201")
+               (r/response "general-400")))}))
 
 (defn run-server []
   (defonce server
@@ -112,7 +112,7 @@
   (testing "correct deletion of key with custom callbacks"
     (let [result (promise)
           _ (ic/del client-no-body-parse :sports :football {:ok #(deliver result %)
-                                           :fail #(deliver result %)})
+                                                            :fail #(deliver result %)})
           resp (deref result wait-ms :timeout)]
       (is (= 200 (:status resp)))
       (is (= "Deleted" (-> resp :body :msg)))))
@@ -182,8 +182,8 @@
   (testing "correct item put using compound data with baked-in response body parser"
     (let [result (promise)
           _ (ic/put client :credit-cards :additional
-              {:value 85, "expires_in" 456, :replace true}
-              {:ok #(deliver result %)})
+                    {:value 85, "expires_in" 456, :replace true}
+                    {:ok #(deliver result %)})
           resp (deref result wait-ms :timeout)]
       (is (map? resp))
       (is (= "Stored." (:msg resp)))))

@@ -57,7 +57,7 @@
   "Instantiates a global client instance"
   [config]
   (alter-var-root #'*client*
-    (constantly (core/new-client config))))
+                  (constantly (core/new-client config))))
 
 
 (defmacro with-client

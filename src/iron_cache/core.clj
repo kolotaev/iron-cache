@@ -122,10 +122,10 @@
 
 (defn- wrap-in-process-response
   "Conditionally wrap given function in response-process"
-  [process? fn]
+  [process? f]
   (if process?
-    #(do (-> % process-response fn))
-    fn))
+    #(-> % process-response f)
+    f))
 
 
 (defn- make-requester
@@ -142,9 +142,9 @@
       (let [async? (or (some? ok) (some? fail))
             http-call (if async?
                         #(http-client/request
-                           %
-                           (wrap-in-process-response parse-cbs? ok)
-                           (wrap-in-process-response parse-cbs? fail))
+                          %
+                          (wrap-in-process-response parse-cbs? ok)
+                          (wrap-in-process-response parse-cbs? fail))
                         #(http-client/request %))
             options (into all-options {:request-method method
                                        :url (make-url uri)
