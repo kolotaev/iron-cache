@@ -1,6 +1,7 @@
 (ns iron-cache.async-test
   (:require [clojure.test :refer :all]
             [iron-cache.core :as ic]
+            [iron-cache.global :as gic]
             [iron-cache.response-utils :as r]
             [ring.adapter.jetty :as ring]
             [cheshire.core :as json]))
@@ -194,3 +195,54 @@
           exception-msg (.getMessage resp)]
       (is (string? exception-msg))
       (is (re-find #"port out of range" exception-msg)))))
+
+
+(deftest ^:integration ^:async with-client-macro-async-put
+  (run-server)
+  (testing "correct item put using basic data with baked-in response body parser"
+    (let [result (promise)
+          _ (gic/with-client client
+              (gic/put :credit-cards :basic {:value 85} {:ok #(deliver result %)}))
+          resp (deref result wait-ms :timeout)]
+      (is (map? resp))
+      (is (= "Stored." (:msg resp)))))
+
+  (testing "correct item put using compound data with baked-in response body parser"
+    (let [result (promise)
+          _ (gic/with-client client
+              (gic/put :credit-cards :additional
+                       {:value 85, "expires_in" 456, :replace true}
+                       {:ok #(deliver result %) :fail #(deliver result %)}))
+          resp (deref result wait-ms :timeout)]
+      (is (map? resp))
+      (is (= "Stored." (:msg resp)))))
+
+  (testing "response failure handling works"
+    (let [result (promise)
+          _ (gic/with-client client-who-fails
+              (gic/put :credit-cards :basic {:value 90} {:fail #(deliver result %)}))
+          resp (deref result wait-ms :timeout)
+          exception-msg (.getMessage resp)]
+      (is (string? exception-msg))
+      (is (re-find #"port out of range" exception-msg)))))
+
+
+(deftest ^:integration ^:async global-client-async-put
+  (run-server)
+  (gic/init-client! {:host URL :project :amiga :token "a"})
+
+  (testing "correct item put using basic data with baked-in response body parser"
+    (let [result (promise)
+          _ (gic/put :credit-cards :basic {:value 85} {:ok #(deliver result %)})
+          resp (deref result wait-ms :timeout)]
+      (is (map? resp))
+      (is (= "Stored." (:msg resp)))))
+
+  (testing "correct item put using compound data with baked-in response body parser"
+    (let [result (promise)
+          _ (gic/put :credit-cards :additional
+                     {:value 85, "expires_in" 456, :replace true}
+                     {:ok #(deliver result %) :fail #(deliver result %)})
+          resp (deref result wait-ms :timeout)]
+      (is (map? resp))
+      (is (= "Stored." (:msg resp))))))
