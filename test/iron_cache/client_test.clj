@@ -175,13 +175,13 @@
 
 
 (deftest key-put
-  (testing "simlpe value was put sucessfully"
+  (testing "simple value was put successfully"
     (with-fake-routes put-key-201-minimal
       (let [resp (ic/put client :credit-cards 1234 {:value 85})]
         (is (map? resp))
         (is (= "Stored." (:msg resp))))))
 
-  (testing "compound value was put sucessfully"
+  (testing "compound value was put successfully"
     (with-fake-routes put-key-201-additional
       (let [resp (ic/put client :credit-cards :1234 {:value 85, "expires_in" 456, :replace true})]
         (is (map? resp))

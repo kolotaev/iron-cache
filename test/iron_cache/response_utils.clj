@@ -9,10 +9,10 @@
 (defn response
   "Read response from a file"
   [file-name]
-  (slurp (str "resources/responses/" file-name)))
+  (slurp (str "test/responses/" file-name)))
 
 (defn is->map
-  "Input Stream to map witk all keywordized keys converter."
+  "Input Stream to map with all keywordized keys converter."
   [is]
   (-> is
       slurp
