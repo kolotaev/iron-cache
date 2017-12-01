@@ -1,6 +1,6 @@
 # iron-cache
 
-A Clojure client for [Iron Cache](http://www.iron.io/cache).
+A Clojure client for [Iron Cache](http://www.iron.io).
 
 # Documentation
 
@@ -67,16 +67,16 @@ The preferred way of using *iron-cache* client is to instantiate a client (or a 
 on them.
 
 The arguments to functions are:
-* Client instance ; required
-* Cache name      ; required
-* Key name        ; For key operations
-* Data            ; Map for key `put`, Numeric for key `incr`
-* Callbacks       ; Map of :ok and :fail callbacks. See [async](#async)
+* Client instance - required
+* Cache name      - required
+* Key name        - For key operations
+* Data            - Map for key `put`, Numeric for key `incr`. See [put](http://dev.iron.io/cache/reference/api/#put_an_item_into_a_cache) and [incr](http://dev.iron.io/cache/reference/api/#increment_an_items_value)
+* Callbacks       - Map of :ok and :fail callbacks. See [async](#async)
 
 Keys and cache names can be either strings or keywords.
 
 ```clojure
-(:require '[iron-cache.core :as ic])
+(require '[iron-cache.core :as ic])
 
 (def client (ic/new-client {:project "bob-project", :token "123-456-789"}))
 (def another-client (ic/new-client {:project "alice-project", :token "asdf-qwerty"}))
@@ -96,23 +96,23 @@ Keys and cache names can be either strings or keywords.
 (ic/get another-client :users :john)
 ; {:cache "users", :key "john", :value {:name "John", :age 25}, :cas 12345}
 
-(ic/put client :users {:name "Bob", :phone 555-89-78})
+(ic/put client :users :bob-id {:value {:name "Bob", :phone 555-89-78}, "expires_in" 456, :replace true})
 ; {:msg "Stored"}
 
-(ic/incr another-client :users :salary 200)
+(ic/incr another-client :salaries :bob-id 200)
 ; {:msg "Added", :value 700}
 
-(ic/del client :users "Sally"))
+(ic/del client :users "Sally")
 ; {:msg "Deleted"}
 ```
 
 ### Global client
 
 Alternatively you can initialize a global client and use all the functions with it implicitly.
-Use should use `iron-cache.global` namespace for that.
+You should use `iron-cache.global` namespace for that.
 
 ```clojure
-(:require '[iron-cache.global :as ic])
+(require '[iron-cache.global :as ic])
 
 (init-client! {:project "amiga" :token "my-token"})
 
@@ -125,30 +125,30 @@ Use should use `iron-cache.global` namespace for that.
 
 ### Using macro
 
-We provide a handy macro for working with a client: `with-client`
-Use should use `iron-cache.global` namespace for that.
+We provide a handy macro for working with a client: `with-client`.
+You should use `iron-cache.global` namespace for that.
 
 ```clojure
-(:require '[iron-cache.global :as ic])
+(require '[iron-cache.global :as ic])
 
-(with-client {:project "amiga" :token "my-token"}
-  (ic/get another-client :users :john)
-  (ic/get another-client :users :marry)
-  (ic/get another-client :users :sally)
+(ic/with-client {:project "amiga" :token "my-token"}
+  (ic/get :users :john)
+  (ic/get :users :marry)
+  (ic/get :users :sally))
 ```
 
 Or
 
 ```clojure
-(:require '[iron-cache.global :as ic])
-(:require '[iron-cache.core :refer [new-client])
+(require '[iron-cache.global :as ic])
+(require '[iron-cache.core :refer [new-client]])
 
 (def client (new-client {:project "bob-project", :token "123-456-789"}))
 
-(with-client client
-  (ic/get another-client :users :john)
-  (ic/get another-client :users :marry)
-  (ic/get another-client :users :sally)
+(ic/with-client client
+  (ic/get :users :john)
+  (ic/get :users :marry)
+  (ic/get :users :sally))
 ```
 
 ### Async
@@ -161,18 +161,17 @@ a synchronous calls. If you want to solely take response outputs and process the
 in client's configuration.
 
 ```clojure
-(:require '[iron-cache.core :as ic])
+(require '[iron-cache.core :as ic])
 
 (def client (ic/new-client)) ; Project and token are taken from env
+(def result (promise))
 
-(let [result (promise)]
-  (ic/del client :sports :football {:ok #(deliver result %)
-                                    :fail #(deliver result %)})
-
-  ; some immediate other code here.
-  ; ...
-  ; and finally:
-  @result)
+(ic/del client :sports :football {:ok #(deliver result %)
+                                  :fail #(deliver result %)})
+; some immediate other code here.
+; ...
+; and finally:
+@result
 ```
 
 ## Development
