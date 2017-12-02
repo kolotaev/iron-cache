@@ -5,12 +5,12 @@ A Clojure client for [Iron Cache](http://www.iron.io).
 # Documentation
 
 - [Prerequisites](#prerequisites)
-- [Functions](#functions)
+- [Actions](#actions)
 - [Usage](#usage)
-	- [Configuration](#config)
+	- [Configuration](#configuration)
 	- [Basic usage](#basic-usage)
 	- [Global client](#global-client)
-	- [Using macro](#using-macro)
+	- [With macro](#with-macro)
 	- [Async](#async)
 - [Development](#development)
 
@@ -20,11 +20,11 @@ A Clojure client for [Iron Cache](http://www.iron.io).
 Before you proceed with *iron-cache* client you have to set up your project and obtain OAuth token at [Iron.io](http://www.iron.io/).
 
 
-## Functions
+## Actions
 
-*iron-cache* client provides a set of functions that correspond to Iron Cache API [endpoints](http://dev.iron.io/cache/reference/api/#endpoints).
+*iron-cache* client provides a set of actions that correspond to Iron Cache API [endpoints](http://dev.iron.io/cache/reference/api/#endpoints).
 
-| Function  	|  Description   |
+| Action      	|  Description   |
 | ------------- |  ------------- |
 | `list`		| Get a list of all caches in a project |
 | `info`	    | Get information about a cache |
@@ -55,6 +55,7 @@ Client should be created with some configuration. Configuration is a simple map.
 
    :project "foo" ; Project name. Required.
    :token "123-456-789" ; OAuth token. Required.
+  }
 ```
 
 As you can see `:project` and `:token` are required. Without it client creation will throw an error.
@@ -69,9 +70,9 @@ on them.
 The arguments to functions are:
 * Client instance - required
 * Cache name      - required
-* Key name        - For key operations
-* Data            - Map for key `put`, Numeric for key `incr`. See [put](http://dev.iron.io/cache/reference/api/#put_an_item_into_a_cache) and [incr](http://dev.iron.io/cache/reference/api/#increment_an_items_value)
-* Callbacks       - Map of :ok and :fail callbacks. See [async](#async)
+* Key name        - for key operations
+* Data            - map for key `put`, Numeric for key `incr`. See [put](http://dev.iron.io/cache/reference/api/#put_an_item_into_a_cache) and [incr](http://dev.iron.io/cache/reference/api/#increment_an_items_value)
+* Callbacks       - map of :ok and :fail callbacks. See [async](#async)
 
 Keys and cache names can be either strings or keywords.
 
@@ -106,6 +107,14 @@ Keys and cache names can be either strings or keywords.
 ; {:msg "Deleted"}
 ```
 
+For unsuccessful requests (other than those returning 2XX) you will get a map:
+```clojure
+{
+  :msg "Some description of the failure"
+  :status 500
+}
+```
+
 ### Global client
 
 Alternatively you can initialize a global client and use all the functions with it implicitly.
@@ -123,7 +132,7 @@ You should use `iron-cache.global` namespace for that.
 ; {:size 85000}
 ```
 
-### Using macro
+### With macro
 
 We provide a handy macro for working with a client: `with-client`.
 You should use `iron-cache.global` namespace for that.
@@ -178,7 +187,9 @@ in client's configuration.
 
 Client has unit and integration tests. You can run them simply as
 ```bash
-lein test
+lein test ;; only unit-tests
+lein test :integration ;; only integration tests
+lein test :all ;; all the tests
 ```
 
 # License
