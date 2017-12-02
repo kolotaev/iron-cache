@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/kolotaev/iron-cache.svg?branch=master)](https://travis-ci.org/kolotaev/iron-cache)
+
 # IronCache Client Library for Clojure
 
 A Clojure client for [Iron Cache](http://www.iron.io).
@@ -208,9 +210,9 @@ in client's configuration.
 
 Client has unit and integration tests. You can run them simply as
 ```bash
-lein test ;; only unit-tests
-lein test :integration ;; only integration tests
-lein test :all ;; all the tests
+lein test :unit             # only unit-tests
+lein test :integration      # only integration tests
+lein test                   # all the tests
 ```
 
 ## License

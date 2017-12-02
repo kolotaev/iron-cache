@@ -17,6 +17,6 @@
   :profiles {:dev {:dependencies [[ring/ring-jetty-adapter "1.6.1"]
                                   [clj-http-fake "1.0.3"]]}}
 
-  :test-selectors {:default  #(not (:integration %))
-                   :integration :integration
-                   :all (constantly true)})
+  :test-selectors {:default (constantly true)
+                   :unit  #(not (:integration %))
+                   :integration :integration})
