@@ -1,13 +1,34 @@
-# iron-cache
+# IronCache Client Library for Clojure
 
 A Clojure client for [Iron Cache](http://www.iron.io).
 
-# Documentation
+
+## Artifact
+
+Leiningen/Boot:
+
+[![Clojars Project](http://clojars.org/iron-cache/latest-version.svg)](https://clojars.org/iron-cache)
+
+Gradle:
+```
+compile "iron-cache:iron-cache:1.0.0"
+```
+
+Maven:
+```xml
+<dependency>
+  <groupId>iron-cache</groupId>
+  <artifactId>iron-cache</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
+
+## Documentation
 
 - [Prerequisites](#prerequisites)
 - [Actions](#actions)
+- [Configuration](#configuration)
 - [Usage](#usage)
-	- [Configuration](#configuration)
 	- [Basic usage](#basic-usage)
 	- [Global client](#global-client)
 	- [With macro](#with-macro)
@@ -15,12 +36,12 @@ A Clojure client for [Iron Cache](http://www.iron.io).
 - [Development](#development)
 
 
-## Prerequisites
+### Prerequisites
 
 Before you proceed with *iron-cache* client you have to set up your project and obtain OAuth token at [Iron.io](http://www.iron.io/).
 
 
-## Actions
+### Actions
 
 *iron-cache* client provides a set of actions that correspond to Iron Cache API [endpoints](http://dev.iron.io/cache/reference/api/#endpoints).
 
@@ -34,11 +55,6 @@ Before you proceed with *iron-cache* client you have to set up your project and 
 | `put`	        | Put an item with specific data into a cache |
 | `incr`	    | Increments the numeric value of an item in a cache |
 | `del`	        | Delete a value from a cache stored at key |
-
-
-## Usage
-
-*iron-cache* client provides a variety of ways you can work with it. See below.
 
 
 ### Configuration
@@ -62,7 +78,12 @@ As you can see `:project` and `:token` are required. Without it client creation 
 Optionally you can specify them in environment variables: _IRON_CACHE_PROJECT_ and _IRON_CACHE_TOKEN_.
 
 
-### Basic usage
+### Usage
+
+*iron-cache* client provides a variety of ways you can work with it. See below.
+
+
+#### Basic usage
 
 The preferred way of using *iron-cache* client is to instantiate a client (or a number of clients) and call functions
 on them.
@@ -115,7 +136,7 @@ For unsuccessful requests (other than those returning 2XX) you will get a map:
 }
 ```
 
-### Global client
+#### Global client
 
 Alternatively you can initialize a global client and use all the functions with it implicitly.
 You should use `iron-cache.global` namespace for that.
@@ -132,7 +153,7 @@ You should use `iron-cache.global` namespace for that.
 ; {:size 85000}
 ```
 
-### With macro
+#### With macro
 
 We provide a handy macro for working with a client: `with-client`.
 You should use `iron-cache.global` namespace for that.
@@ -160,7 +181,7 @@ Or
   (ic/get :users :sally))
 ```
 
-### Async
+#### Async
 
 All the calls are synchronous by nature. But, if you wish it's possible to make async calls simply by providing
 a map with `:ok` and `:fail` callbacks. _At least one of them should be specified_.
@@ -183,7 +204,7 @@ in client's configuration.
 @result
 ```
 
-## Development
+### Development
 
 Client has unit and integration tests. You can run them simply as
 ```bash
@@ -192,7 +213,7 @@ lein test :integration ;; only integration tests
 lein test :all ;; all the tests
 ```
 
-# License
+## License
 
 Copyright © 2017 Egor Kolotaev.
 
