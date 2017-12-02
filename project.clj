@@ -14,6 +14,8 @@
                  [cheshire "5.7.1"]
                  [clj-http "3.7.0"]]
 
+  :plugins [[lein-cloverage "1.0.10-SNAPSHOT"]]
+
   :profiles {:dev {:dependencies [[ring/ring-jetty-adapter "1.6.1"]
                                   [clj-http-fake "1.0.3"]]}}
 

@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/kolotaev/iron-cache.svg?branch=master)](https://travis-ci.org/kolotaev/iron-cache)
+[![codecov.io](https://codecov.io/github/kolotaev/iron-cache/coverage.svg?branch=master)](https://codecov.io/github/kolotaev/iron-cache?branch=master)
 
 # IronCache Client Library for Clojure
 
@@ -95,7 +96,7 @@ The arguments to functions are:
 * Cache name      - required
 * Key name        - for key operations
 * Data            - map for key `put`, Numeric for key `incr`. See [put](http://dev.iron.io/cache/reference/api/#put_an_item_into_a_cache) and [incr](http://dev.iron.io/cache/reference/api/#increment_an_items_value)
-* Callbacks       - map of :ok and :fail callbacks. See [async](#async)
+* Callbacks       - map of `:ok` and `:fail` callbacks. See [async](#async)
 
 Keys and cache names can be either strings or keywords.
 
@@ -213,6 +214,7 @@ Client has unit and integration tests. You can run them simply as
 lein test :unit             # only unit-tests
 lein test :integration      # only integration tests
 lein test                   # all the tests
+lein cloverage              # run code-coverage report
 ```
 
 ## License
